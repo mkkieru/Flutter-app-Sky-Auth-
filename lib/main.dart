@@ -3,6 +3,8 @@ import 'package:sky_auth/constants.dart';
 import 'package:sky_auth/views/login/login.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
 
+import 'views/signup/signup.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
         primaryColor: kPrimary,
       ),
       //home: WelcomeScreen(),
-      home: Login(),
+      home: Signup(),
     );
   }
 }

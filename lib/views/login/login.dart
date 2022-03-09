@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sky_auth/components/loginButton.dart';
 import 'package:sky_auth/constants.dart';
 
 class Login extends StatelessWidget {
@@ -88,8 +89,15 @@ class Login extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
+                  LoginButton(
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) => const Login())),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -100,10 +108,9 @@ class Login extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          var snackBar = SnackBar(
-                            content: const Icon(Icons.thumb_up),
+                          var snackBar = const SnackBar(
+                            content: Icon(Icons.thumb_up),
                             backgroundColor: kPrimaryLightColor,
-                            action: SnackBarAction(label: 'SnackBarAction Label', onPressed: (){}),
                           );
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         },
