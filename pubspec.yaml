@@ -27,6 +27,9 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  cryptography:
+  cryptography_flutter:
+  http:
   flutter_svg: any
   flutter:
     sdk: flutter
@@ -64,6 +67,22 @@ flutter:
       - assets/icons/
       - assets/images/
 
+  fonts:
+    - family: Raleway
+      fonts:
+        - asset: fonts/Raleway/static/Raleway-Regular.ttf
+          style: normal
+  #fonts/Syne_Mono
+    - family: Syne_Mono
+      fonts:
+        - asset: fonts/Syne_Mono/SyneMono-Regular.ttf
+          style: normal
+
+  #KaushanScript-Regular.ttf
+    - family: Kaushan_Script
+      fonts:
+          - asset: fonts/Kaushan_Script/KaushanScript-Regular.ttf
+            style: normal
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

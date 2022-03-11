@@ -1,0 +1,185 @@
+diff --git a/packages/flutter_tools/lib/src/artifacts.dart b/packages/flutter_tools/lib/src/artifacts.dart
+index 9544a18f7..d72e28bd4 100644
+--- a/packages/flutter_tools/lib/src/artifacts.dart
++++ b/packages/flutter_tools/lib/src/artifacts.dart
+@@ -2,6 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++import 'dart:io';
++
+ import 'package:meta/meta.dart';
+ 
+ import 'base/context.dart';
+@@ -256,17 +258,15 @@ class CachedArtifacts extends Artifacts {
+       case Artifact.idevicescreenshot:
+       case Artifact.idevicesyslog:
+       case Artifact.idevicename:
+-        final String artifactFileName = _artifactToFileName(artifact);
+-        return cache.getArtifactDirectory('libimobiledevice').childFile(artifactFileName).path;
+       case Artifact.iosDeploy:
+-        final String artifactFileName = _artifactToFileName(artifact);
+-        return cache.getArtifactDirectory('ios-deploy').childFile(artifactFileName).path;
+       case Artifact.ideviceinstaller:
+-        final String artifactFileName = _artifactToFileName(artifact);
+-        return cache.getArtifactDirectory('ideviceinstaller').childFile(artifactFileName).path;
+       case Artifact.iproxy:
+         final String artifactFileName = _artifactToFileName(artifact);
+-        return cache.getArtifactDirectory('usbmuxd').childFile(artifactFileName).path;
++        final ProcessResult whichResult = Process.runSync('which', <String>[artifactFileName]);
++        if (whichResult.exitCode != 0) {
++          throw UnsupportedError('$artifactFileName is not in the path, please install the dependencies following the article, and add it to the PATH if necessary');
++        }
++        return whichResult.stdout.toString().trimRight();
+       default:
+         return _getHostArtifactPath(artifact, platform, mode);
+     }
+diff --git a/packages/flutter_tools/lib/src/ios/devices.dart b/packages/flutter_tools/lib/src/ios/devices.dart
+index b11a627b7..23659c95c 100644
+--- a/packages/flutter_tools/lib/src/ios/devices.dart
++++ b/packages/flutter_tools/lib/src/ios/devices.dart
+@@ -106,7 +106,7 @@ class IOSDevices extends PollingDeviceDiscovery {
+   IOSDevices() : super('iOS devices');
+ 
+   @override
+-  bool get supportsPlatform => platform.isMacOS;
++  bool get supportsPlatform => true;
+ 
+   @override
+   bool get canListAnything => iosWorkflow.canListDevices;
+@@ -172,10 +172,8 @@ class IOSDevice extends Device {
+   bool get supportsStartPaused => false;
+ 
+   static Future<List<IOSDevice>> getAttachedDevices() async {
+-    if (!platform.isMacOS) {
+-      throw UnsupportedError('Control of iOS devices or simulators only supported on Mac OS.');
+-    }
+     if (!iMobileDevice.isInstalled) {
++      printError("libimobiledevice doesn't seem to be installed, reread the instalation steps or leave a comment in the article");
+       return <IOSDevice>[];
+     }
+ 
+@@ -208,9 +206,6 @@ class IOSDevice extends Device {
+       apps = await processUtils.run(
+         <String>[_installerPath, '--list-apps'],
+         throwOnError: true,
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry],
+-        ),
+       );
+     } on ProcessException {
+       return false;
+@@ -233,9 +228,6 @@ class IOSDevice extends Device {
+       await processUtils.run(
+         <String>[_installerPath, '-i', app.deviceBundlePath],
+         throwOnError: true,
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry],
+-        ),
+       );
+       return true;
+     } on ProcessException catch (error) {
+@@ -250,9 +242,6 @@ class IOSDevice extends Device {
+       await processUtils.run(
+         <String>[_installerPath, '-U', app.id],
+         throwOnError: true,
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry],
+-        ),
+       );
+       return true;
+     } on ProcessException catch (error) {
+@@ -707,9 +696,6 @@ class IOSDevicePortForwarder extends DevicePortForwarder {
+           devicePort.toString(),
+           device.id,
+         ],
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry],
+-        ),
+       );
+       // TODO(ianh): This is a flakey race condition, https://github.com/libimobiledevice/libimobiledevice/issues/674
+       connected = !await process.stdout.isEmpty.timeout(_kiProxyPortForwardTimeout, onTimeout: () => false);
+diff --git a/packages/flutter_tools/lib/src/ios/ios_workflow.dart b/packages/flutter_tools/lib/src/ios/ios_workflow.dart
+index ac9630ba9..5913050d4 100644
+--- a/packages/flutter_tools/lib/src/ios/ios_workflow.dart
++++ b/packages/flutter_tools/lib/src/ios/ios_workflow.dart
+@@ -17,7 +17,7 @@ class IOSWorkflow implements Workflow {
+ 
+   // We need xcode (+simctl) to list simulator devices, and libimobiledevice to list real devices.
+   @override
+-  bool get canListDevices => xcode.isInstalledAndMeetsVersionCheck && xcode.isSimctlInstalled;
++  bool get canListDevices => true;
+ 
+   // We need xcode to launch simulator devices, and ideviceinstaller and ios-deploy
+   // for real devices.
+diff --git a/packages/flutter_tools/lib/src/ios/mac.dart b/packages/flutter_tools/lib/src/ios/mac.dart
+index dd5597f62..bb2576520 100644
+--- a/packages/flutter_tools/lib/src/ios/mac.dart
++++ b/packages/flutter_tools/lib/src/ios/mac.dart
+@@ -97,7 +97,9 @@ class IMobileDevice {
+         _ideviceinfoPath = artifacts.getArtifactPath(Artifact.ideviceinfo, platform: TargetPlatform.ios),
+         _idevicenamePath = artifacts.getArtifactPath(Artifact.idevicename, platform: TargetPlatform.ios),
+         _idevicesyslogPath = artifacts.getArtifactPath(Artifact.idevicesyslog, platform: TargetPlatform.ios),
+-        _idevicescreenshotPath = artifacts.getArtifactPath(Artifact.idevicescreenshot, platform: TargetPlatform.ios);
++        _idevicescreenshotPath = artifacts.getArtifactPath(Artifact.idevicescreenshot, platform: TargetPlatform.ios) {
++          assert(artifacts.runtimeType == CachedArtifacts);
++        }
+ 
+   final String _ideviceIdPath;
+   final String _ideviceinfoPath;
+@@ -111,9 +113,6 @@ class IMobileDevice {
+         _ideviceIdPath,
+         '-h',
+       ],
+-      environment: Map<String, String>.fromEntries(
+-        <MapEntry<String, String>>[cache.dyLdLibEntry]
+-      ),
+     );
+     return _isInstalled;
+   }
+@@ -176,11 +175,12 @@ class IMobileDevice {
+           _ideviceIdPath,
+           '-l',
+         ],
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry]
+-        ),
+       );
+       if (result.exitCode != 0) {
++        if (result.stderr.toString().contains('ERROR: Unable to retrieve device list!')) {
++          // idevice_id might throw this error if there are no connected devices
++          return '';
++        }
+         throw ToolExit('idevice_id returned an error:\n${result.stderr}');
+       }
+       return result.stdout as String;
+@@ -199,9 +199,6 @@ class IMobileDevice {
+           '-k',
+           key,
+         ],
+-        environment: Map<String, String>.fromEntries(
+-          <MapEntry<String, String>>[cache.dyLdLibEntry]
+-        ),
+       );
+       final String stdout = result.stdout as String;
+       final String stderr = result.stderr as String;
+@@ -239,9 +236,6 @@ class IMobileDevice {
+         '-u',
+         deviceID,
+       ],
+-      environment: Map<String, String>.fromEntries(
+-        <MapEntry<String, String>>[cache.dyLdLibEntry]
+-      ),
+     );
+   }
+ 
+@@ -253,9 +247,6 @@ class IMobileDevice {
+         outputFile.path,
+       ],
+       throwOnError: true,
+-      environment: Map<String, String>.fromEntries(
+-        <MapEntry<String, String>>[cache.dyLdLibEntry]
+-      ),
+     );
+   }
+ }

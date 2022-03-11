@@ -1,15 +1,18 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 
 class Background extends StatelessWidget {
 
   Widget child ;
 
-  Background (this.child);
+  Background (this.child, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     //Get total height and width of the user screen
     Size size = MediaQuery.of(context).size;
+    // ignore: sized_box_for_whitespace
     return Container(
       height: size.height,
       width: double.infinity,

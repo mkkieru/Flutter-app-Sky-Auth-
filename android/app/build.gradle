@@ -40,6 +40,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
     }
 
     buildTypes {
@@ -50,6 +51,11 @@ android {
         }
     }
 }
+android {
+    defaultConfig {
+         minSdkVersion 21
+       }
+    }
 
 flutter {
     source '../..'

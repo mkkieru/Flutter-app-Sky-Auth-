@@ -2,15 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sky_auth/components/loginButton.dart';
 import 'package:sky_auth/constants.dart';
+import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
 
-class Login extends StatelessWidget {
+import 'dart:collection';
+import 'dart:convert';
+
+class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
+
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: SingleChildScrollView(
+        // ignore: sized_box_for_whitespace
         child: Container(
           height: size.height,
           width: double.infinity,
@@ -56,13 +70,14 @@ class Login extends StatelessWidget {
                         color: kPrimaryLightColor,
                         borderRadius: BorderRadius.circular(29)),
                     child: TextField(
+                      controller: _username,
                       onChanged: (value) => print(value),
                       decoration: const InputDecoration(
                         icon: Icon(
                           Icons.person,
                           color: kPrimary,
                         ),
-                        hintText: 'Your Email',
+                        hintText: 'Your Username',
                         border: InputBorder.none,
                       ),
                     ),
@@ -76,6 +91,7 @@ class Login extends StatelessWidget {
                         color: kPrimaryLightColor,
                         borderRadius: BorderRadius.circular(29)),
                     child: TextField(
+                      controller: _password,
                       onChanged: (value) => print(value),
                       obscureText: true,
                       decoration: const InputDecoration(
@@ -94,25 +110,22 @@ class Login extends StatelessWidget {
                       'Login',
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) => const Login())),
+                    onPressed: () {
+                      var username = _username.text;
+                      var password = _password.text;
+                      LoginToApp(username, password, context);
+                    },
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       const Text(
-                        "Don\'t have an account ? ",
+                        "Don't have an account ? ",
                         style: TextStyle(fontSize: 15),
                       ),
                       GestureDetector(
                         onTap: () {
-                          var snackBar = const SnackBar(
-                            content: Icon(Icons.thumb_up),
-                            backgroundColor: kPrimaryLightColor,
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          Navigator.popAndPushNamed(context, '/signup');
                         },
                         child: const Text(
                           "Signup ",
@@ -132,5 +145,60 @@ class Login extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+void LoginToApp(var name, var pass, var context) async {
+  // String password= 'MarkKieru55';
+  // String username= 'Mkkier55';
+
+  String password = pass;
+  String username = name;
+
+  var bytes = utf8.encode(password);
+  var usernameBytes = utf8.encode(username);
+
+  var hashedPasswordString = sha256.convert(bytes).toString();
+  var hashedPasswordBytes = utf8.encode(hashedPasswordString);
+
+  var auth = sha256.convert(usernameBytes + hashedPasswordBytes).toString();
+
+  print('auth: $auth');
+
+  Map<String, String> headerValues = {
+    'auth': auth,
+  };
+
+  final response = await http.post(
+    Uri.parse(
+        'http://85.159.214.103:8081/sky-auth/authorization/login?username=' +
+            username),
+    headers: headerValues,
+  );
+
+  if (response.statusCode == 200) {
+    LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
+
+    String accessToken = responseBody['access_token'];
+
+    print('Access Token: $accessToken');
+
+    ACCESSTOKEN = accessToken;
+    Navigator.pushNamed(context, '/homePage');
+
+    var snackBar = const SnackBar(
+      content: Text(
+        'LOGIN SUCCESSFUL',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 15,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      backgroundColor: Color.fromARGB(255, 75, 181, 67),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  } else {
+    print(response.reasonPhrase);
   }
 }

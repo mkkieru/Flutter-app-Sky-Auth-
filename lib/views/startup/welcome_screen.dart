@@ -1,9 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:sky_auth/components/background.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sky_auth/components/loginButton.dart';
 import 'package:sky_auth/constants.dart';
-import 'package:sky_auth/views/login/login.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -41,7 +42,7 @@ class WelcomeScreen extends StatelessWidget {
                   'Login',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const Login())),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
 
               ),
               Container(
@@ -53,12 +54,7 @@ class WelcomeScreen extends StatelessWidget {
                   child: FlatButton(
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     color: kPrimaryLightColor,
-                    onPressed: () {},
-                    onLongPress: () {
-                      const snackBar =
-                          SnackBar(content: Text('Yay! A SnackBar!'));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    },
+                    onPressed: () { Navigator.pushReplacementNamed(context, '/signup');},
                     child: const Text(
                       'Signup',
                       style: TextStyle(
