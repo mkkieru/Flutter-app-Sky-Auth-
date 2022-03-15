@@ -27,6 +27,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  quiver: ^3.0.1+1
+  flutter_countdown_timer:
   cryptography:
   cryptography_flutter:
   http:
@@ -84,6 +86,11 @@ flutter:
           - asset: fonts/Kaushan_Script/KaushanScript-Regular.ttf
             style: normal
 
+  #fonts/Cabin/static/Cabin/Cabin-Italic.ttf  Cabin
+    - family: Cabin
+      fonts:
+          - asset: fonts/Cabin/static/Cabin/Cabin-Italic.ttf
+            style: normal
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

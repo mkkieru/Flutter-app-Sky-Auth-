@@ -61,7 +61,9 @@ class DrawerWidget extends StatelessWidget {
               ),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context,'/identifiers');},
               leading: const Icon(
                 Icons.person,
                 color: kPrimary,

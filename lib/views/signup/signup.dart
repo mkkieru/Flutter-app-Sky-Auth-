@@ -121,16 +121,17 @@ class _SignupState extends State<Signup> {
                 controller: _password,
                 obscureText: true,
                 decoration: InputDecoration(
-                    border: InputBorder.none,
-                    icon: const Icon(
-                      Icons.lock,
-                      color: kPrimary,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.visibility),
-                      onPressed: () {},
-                    ),
-                    hintText: "Password"),
+                  border: InputBorder.none,
+                  icon: const Icon(
+                    Icons.lock,
+                    color: kPrimary,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () {},
+                  ),
+                  hintText: "Password",
+                ),
               ),
             ),
             LoginButton(
@@ -178,9 +179,8 @@ class _SignupState extends State<Signup> {
 
 void signUp(String fName, String lName, String uName, String natID, String pass,
     context) async {
-
   Map<String, dynamic> userSignupDetails = {
-    'first_name': fName,                                                                                                                              
+    'first_name': fName,
     'last_name': lName,
     'username': uName,
     'national_id': int.parse(natID),
@@ -189,20 +189,19 @@ void signUp(String fName, String lName, String uName, String natID, String pass,
   };
 
   try {
-      var response = await http.post(
-          Uri.parse("http://10.0.2.2:8081/sky-auth/users"),
-          body: json.encode(userSignupDetails));
+    var response = await http.post(
+        Uri.parse("http://10.0.2.2:8081/sky-auth/users"),
+        body: json.encode(userSignupDetails));
 
-     // var response = await http.post(
-     //     Uri.parse("http://85.159.214.103:8081/sky-auth/users"),
-     //     body: jsonEncode(userSignupDetails));
+    // var response = await http.post(
+    //     Uri.parse("http://85.159.214.103:8081/sky-auth/users"),
+    //     body: jsonEncode(userSignupDetails));
 
     LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
 
     print(responseBody.values);
 
     if (response.statusCode == 200) {
-
       Navigator.pushNamed(context, '/homePage');
       const snackBar = SnackBar(
         content: Text(
@@ -218,7 +217,7 @@ void signUp(String fName, String lName, String uName, String natID, String pass,
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //print(responseBody);
-       var snackBar = SnackBar(
+      var snackBar = SnackBar(
         content: Text(
           responseBody.values.first,
           style: const TextStyle(
@@ -227,11 +226,11 @@ void signUp(String fName, String lName, String uName, String natID, String pass,
             fontWeight: FontWeight.normal,
           ),
         ),
-         backgroundColor: const Color.fromARGB(255, 255, 148, 148),
+        backgroundColor: const Color.fromARGB(255, 255, 148, 148),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   } catch (exception) {
-    print('Exception : '+exception.toString());
+    print('Exception : ' + exception.toString());
   }
 }

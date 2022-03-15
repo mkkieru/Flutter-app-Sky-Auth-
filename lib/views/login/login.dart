@@ -146,59 +146,106 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-}
 
-void LoginToApp(var name, var pass, var context) async {
-  // String password= 'MarkKieru55';
-  // String username= 'Mkkier55';
+  void LoginToApp(var name, var pass, var context) async {
+    // String password= 'MarkKieru55';
+    // String username= 'Mkkier55';
 
-  String password = pass;
-  String username = name;
+    String password = pass;
+    String username = name;
 
-  var bytes = utf8.encode(password);
-  var usernameBytes = utf8.encode(username);
+    var bytes = utf8.encode(password);
+    var usernameBytes = utf8.encode(username);
 
-  var hashedPasswordString = sha256.convert(bytes).toString();
-  var hashedPasswordBytes = utf8.encode(hashedPasswordString);
+    var hashedPasswordString = sha256.convert(bytes).toString();
+    var hashedPasswordBytes = utf8.encode(hashedPasswordString);
 
-  var auth = sha256.convert(usernameBytes + hashedPasswordBytes).toString();
+    var auth = sha256.convert(usernameBytes + hashedPasswordBytes).toString();
 
-  print('auth: $auth');
+    Map<String, String> headerValues = {
+      'auth': auth,
+    };
 
-  Map<String, String> headerValues = {
-    'auth': auth,
-  };
-
-  final response = await http.post(
-    Uri.parse(
-        'http://85.159.214.103:8081/sky-auth/authorization/login?username=' +
-            username),
-    headers: headerValues,
-  );
-
-  if (response.statusCode == 200) {
-    LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
-
-    String accessToken = responseBody['access_token'];
-
-    print('Access Token: $accessToken');
-
-    ACCESSTOKEN = accessToken;
-    Navigator.pushNamed(context, '/homePage');
-
-    var snackBar = const SnackBar(
-      content: Text(
-        'LOGIN SUCCESSFUL',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 15,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-      backgroundColor: Color.fromARGB(255, 75, 181, 67),
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:8081/sky-auth/authorization/login?username=' +
+          username),
+      headers: headerValues,
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  } else {
-    print(response.reasonPhrase);
+
+    if (response.statusCode == 200) {
+      LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
+
+      String accessToken = responseBody['access_token'];
+      // ignore: non_constant_identifier_names
+      int user_id = responseBody['user_id'];
+
+      print('Access Token: $accessToken');
+
+      ACCESSTOKEN = accessToken;
+      USERID = user_id;
+
+      getIdentifierAndTypes(context);
+    } else {
+      var snackBar = const SnackBar(
+        content: Text(
+          'INVALID CREDENTIALS',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        backgroundColor: Color.fromARGB(255, 255, 204, 204),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  void getIdentifierAndTypes(context) async {
+    var responseIdentifiers = await http.get(
+        Uri.parse("http://10.0.2.2:8081/sky-auth/identifier"),
+        headers: {"access_token": ACCESSTOKEN});
+
+    var responseIdentifierTypes = await http.get(
+        Uri.parse('http://10.0.2.2:8081/sky-auth/identifier_type'),
+        headers: {"access_token": ACCESSTOKEN});
+
+    if (responseIdentifiers.statusCode == 200 ||
+        responseIdentifierTypes.statusCode == 200) {
+      var identifiersFromDB = jsonDecode(responseIdentifiers.body);
+      var identifierTypesFromDB = jsonDecode(responseIdentifierTypes.body);
+
+      constantIdentifiers.clear();
+      constantIdentifierTypes.clear();
+
+      try {
+        if (identifiersFromDB["Message"]) {}
+      } catch (exception) {
+        for (int i = 0; i < identifiersFromDB.length; i++) {
+          constantIdentifiers.add(identifiersFromDB[i]);
+        }
+      }
+
+      for (int i = 0; i < identifierTypesFromDB.length; i++) {
+        constantIdentifierTypes.add(identifierTypesFromDB[i]);
+      }
+      individualIdentifier =  constantIdentifiers[0]["identifier"];
+
+      Navigator.pushNamed(context, '/homePage');
+
+      var snackBar = const SnackBar(
+        content: Text(
+          'LOGIN SUCCESSFUL',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        backgroundColor: Color.fromARGB(255, 75, 181, 67),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
   }
 }

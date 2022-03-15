@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:sky_auth/homePage.dart';
 import 'package:sky_auth/views/login/login.dart';
 import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
+import 'package:http/http.dart' as http;
 
 
+import 'views/identifier.dart';
 import 'views/signup/signup.dart';
 
 void main() {
@@ -24,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'Mark Kieru',
       theme: ThemeData(
         primaryColor: kPrimary,
-        fontFamily: 'Kaushan_Script',
+        fontFamily: 'Cabin',
         //brightness: Brightness.dark,
         brightness: Brightness.light,
       ),
@@ -32,8 +36,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const Login(),
         '/signup': (context) => const Signup(),
-        '/homePage': (context) => const HomePage(),
+        '/homePage': (context) => HomePage(),
+        '/identifiers': (context) => const Identifiers(),
       },
     );
   }
+
 }
