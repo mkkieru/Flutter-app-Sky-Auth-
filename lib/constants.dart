@@ -1,11 +1,16 @@
+// ignore_for_file: non_constant_identifier_names, prefer_typing_uninitialized_variables, duplicate_ignore
+
 import 'package:flutter/material.dart';
 
 const kPrimary = Color(0xFF6F35A5);
 const kPrimaryLightColor = Color(0xFFD5CEE3);
 const kPrimaryLightColorHomePageBackground = Color(0xFFDFDFEA);
-// ignore: non_constant_identifier_names, prefer_typing_uninitialized_variables
-late var ACCESSTOKEN;
-late var USERID;
+// ignore: prefer_typing_uninitialized_variables
+
+var ACCESSTOKEN;
+
+int USERID = 0;
+var authCodes = [];
 
 var individualIdentifier = "";
 

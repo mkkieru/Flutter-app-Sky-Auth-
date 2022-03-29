@@ -1,4 +1,7 @@
+// ignore_for_file: unused_import, deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:sky_auth/components/drawerWidget.dart';
 import 'package:sky_auth/components/identifierListTile.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +28,7 @@ class _IdentifiersState extends State<Identifiers> {
       getIdentifierAndTypes(context);
     });
     return Scaffold(
+      drawer: const DrawerWidget(),
       appBar: AppBar(
         backgroundColor: kPrimary,
         elevation: 10,
@@ -157,7 +161,7 @@ class _IdentifiersState extends State<Identifiers> {
     };
 
     var response = await http.post(
-      Uri.parse("http://10.0.2.2:8081/sky-auth/identifier"),
+      Uri.parse("http://85.159.214.103:8081/sky-auth/identifier"),
       headers: {"access_token": ACCESSTOKEN},
       body: jsonEncode(body),
     );
@@ -182,11 +186,11 @@ class _IdentifiersState extends State<Identifiers> {
   }
   void getIdentifierAndTypes(context) async {
     var responseIdentifiers = await http.get(
-        Uri.parse("http://10.0.2.2:8081/sky-auth/identifier"),
+        Uri.parse("http://85.159.214.103:8081/sky-auth/identifier"),
         headers: {"access_token": ACCESSTOKEN});
 
     var responseIdentifierTypes = await http.get(
-        Uri.parse('http://10.0.2.2:8081/sky-auth/identifier_type'),
+        Uri.parse('http://85.159.214.103:8081/sky-auth/identifier_type'),
         headers: {"access_token": ACCESSTOKEN});
 
     if (responseIdentifiers.statusCode == 200 ||

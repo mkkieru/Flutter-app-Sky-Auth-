@@ -8,9 +8,9 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        //api "androidx.core:core:1.7.0"
     }
 }
-
 allprojects {
     repositories {
         google()

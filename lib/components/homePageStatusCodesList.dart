@@ -1,3 +1,6 @@
+// ignore_for_file: unused_import, file_names
+
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -10,15 +13,12 @@ class HomepageStatusCodesList extends StatefulWidget {
   const HomepageStatusCodesList({Key? key}) : super(key: key);
 
   @override
-  State<HomepageStatusCodesList> createState() =>
-      _HomepageStatusCodesListState();
+  State<HomepageStatusCodesList> createState() => _HomepageStatusCodesList();
 }
 
-class _HomepageStatusCodesListState extends State<HomepageStatusCodesList> {
-  var authCodesOriginal = [];
+class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
   @override
   Widget build(BuildContext context) {
-    getStatusCodes();
     Size size = MediaQuery.of(context).size;
     return Stack(children: [
       Background(
@@ -32,23 +32,25 @@ class _HomepageStatusCodesListState extends State<HomepageStatusCodesList> {
         ),
       ),
       ListView.builder(
-        itemCount: authCodesOriginal.length,
+        itemCount: authCodes.length,
         itemBuilder: (BuildContext context, int index) {
           String progName = "";
 
           try {
-            String test = authCodesOriginal[index]["auth_code"];
+            // ignore: unused_local_variable
+            String test = authCodes[index]["auth_code"];
             for (int i = 0; i < programs.length; i++) {
-              if (programs[i]["program_id"] ==
-                  authCodesOriginal[index]["program_id"]) {
+              if (programs[i]["program_id"] == authCodes[index]["program_id"]) {
                 progName = programs[i]["program_name"];
               }
             }
             // ignore: sized_box_for_whitespace
             return StatusCodeWidget(
-                progName,
-                authCodesOriginal[index]["time_to_live"],
-                authCodesOriginal[index]["auth_code"]);
+              progName,
+              authCodes[index]["time_to_live"] -
+                  authCodes[index]["age"]["wholeSeconds"],
+              authCodes[index]["auth_code"],
+            );
           } catch (e) {
             return const Card(
               child: ListTile(
@@ -67,26 +69,5 @@ class _HomepageStatusCodesListState extends State<HomepageStatusCodesList> {
         },
       ),
     ]);
-  }
-
-  getStatusCodes() async {
-    print(individualIdentifier);
-    var response = await http.get(
-      Uri.parse("http://10.0.2.2:8081/sky-auth/auth_details?user_id=" +
-          USERID.toString() +
-          "&identifier=" +
-          individualIdentifier),
-      headers: {"access_token": ACCESSTOKEN},
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        try {
-          authCodesOriginal = jsonDecode(response.body);
-        } catch (e) {
-          authCodesOriginal = [jsonDecode(response.body)];
-        }
-      });
-    }
   }
 }

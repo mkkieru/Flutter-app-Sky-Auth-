@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:sky_auth/constants.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -46,14 +46,17 @@ class DrawerWidget extends StatelessWidget {
               color: kPrimary,
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacementNamed("/homePage");
+              },
               leading: const Icon(
                 Icons.person,
                 color: kPrimary,
                 size: 25,
               ),
               title: const Text(
-                'Profile',
+                'Home',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 30,
@@ -63,7 +66,8 @@ class DrawerWidget extends StatelessWidget {
             ListTile(
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context,'/identifiers');},
+                Navigator.pushReplacementNamed(context, '/identifiers');
+              },
               leading: const Icon(
                 Icons.person,
                 color: kPrimary,
@@ -78,22 +82,14 @@ class DrawerWidget extends StatelessWidget {
               ),
             ),
             ListTile(
-              onTap: () {},
-              leading: const Icon(
-                Icons.person,
-                color: kPrimary,
-                size: 25,
-              ),
-              title: const Text(
-                'Programs',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 30,
-                ),
-              ),
-            ),
-            ListTile(
-              onTap: () {
+              onTap: () async {
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+
+                prefs.setString('user_id', "");
+                prefs.setString('ip_address', "");
+                prefs.setString('access_token', "");
+
                 Navigator.pop(context);
                 Navigator.pushReplacementNamed(context, '/login');
               },

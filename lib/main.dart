@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:sky_auth/constants.dart';
@@ -6,7 +5,6 @@ import 'package:sky_auth/homePage.dart';
 import 'package:sky_auth/views/login/login.dart';
 import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
-import 'package:http/http.dart' as http;
 
 
 import 'views/identifier.dart';
@@ -32,11 +30,12 @@ class MyApp extends StatelessWidget {
         //brightness: Brightness.dark,
         brightness: Brightness.light,
       ),
+      //home: HomePage(),
       home: const WelcomeScreen(),
       routes: {
         '/login': (context) => const Login(),
         '/signup': (context) => const Signup(),
-        '/homePage': (context) => HomePage(),
+        '/homePage': (context) => const HomePage(),
         '/identifiers': (context) => const Identifiers(),
       },
     );

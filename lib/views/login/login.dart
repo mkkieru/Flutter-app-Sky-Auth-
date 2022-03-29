@@ -1,5 +1,8 @@
+// ignore_for_file: non_constant_identifier_names, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sky_auth/components/loginButton.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:http/http.dart' as http;
@@ -71,7 +74,7 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(29)),
                     child: TextField(
                       controller: _username,
-                      onChanged: (value) => print(value),
+                      onChanged: (value) {},
                       decoration: const InputDecoration(
                         icon: Icon(
                           Icons.person,
@@ -92,7 +95,7 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(29)),
                     child: TextField(
                       controller: _password,
-                      onChanged: (value) => print(value),
+                      onChanged: (value) {},
                       obscureText: true,
                       decoration: const InputDecoration(
                         icon: Icon(
@@ -148,9 +151,6 @@ class _LoginState extends State<Login> {
   }
 
   void LoginToApp(var name, var pass, var context) async {
-    // String password= 'MarkKieru55';
-    // String username= 'Mkkier55';
-
     String password = pass;
     String username = name;
 
@@ -166,11 +166,15 @@ class _LoginState extends State<Login> {
       'auth': auth,
     };
 
+    print("Before db query ... ");
+
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8081/sky-auth/authorization/login?username=' +
-          username),
+      Uri.parse(
+          'http://85.159.214.103:8081/sky-auth/authorization/login?username=' +
+              username),
       headers: headerValues,
     );
+    print("After db query ... ");
 
     if (response.statusCode == 200) {
       LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
@@ -179,12 +183,33 @@ class _LoginState extends State<Login> {
       // ignore: non_constant_identifier_names
       int user_id = responseBody['user_id'];
 
-      print('Access Token: $accessToken');
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('user_id', responseBody['user_id'].toString());
+      prefs.setString('ip_address', responseBody['ip_address']);
+      prefs.setString('access_token', accessToken);
 
       ACCESSTOKEN = accessToken;
       USERID = user_id;
 
-      getIdentifierAndTypes(context);
+      await getIdentifierAndTypes();
+      await getPrograms();
+      await getStatusCodes();
+
+      Navigator.pushReplacementNamed(context, '/homePage');
+
+      var snackBar = const SnackBar(
+        content: Text(
+          'LOGIN SUCCESSFUL',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        backgroundColor: Color.fromARGB(255, 75, 181, 67),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       var snackBar = const SnackBar(
         content: Text(
@@ -201,13 +226,64 @@ class _LoginState extends State<Login> {
     }
   }
 
-  void getIdentifierAndTypes(context) async {
+  // void getIdentifierAndTypes(context) async {
+  //   var responseIdentifiers = await http.get(
+  //       Uri.parse("http://85.159.214.103:8081/sky-auth/identifier"),
+  //       headers: {"access_token": ACCESSTOKEN});
+  //
+  //   var responseIdentifierTypes = await http.get(
+  //       Uri.parse('http://85.159.214.103:8081/sky-auth/identifier_type'),
+  //       headers: {"access_token": ACCESSTOKEN});
+  //
+  //   if (responseIdentifiers.statusCode == 200 ||
+  //       responseIdentifierTypes.statusCode == 200) {
+  //     var identifiersFromDB = jsonDecode(responseIdentifiers.body);
+  //     var identifierTypesFromDB = jsonDecode(responseIdentifierTypes.body);
+  //
+  //     constantIdentifiers.clear();
+  //     constantIdentifierTypes.clear();
+  //
+  //     try {
+  //       if (identifiersFromDB["Message"]) {}
+  //     } catch (exception) {
+  //       for (int i = 0; i < identifiersFromDB.length; i++) {
+  //         constantIdentifiers.add(identifiersFromDB[i]);
+  //       }
+  //     }
+  //
+  //     for (int i = 0; i < identifierTypesFromDB.length; i++) {
+  //       constantIdentifierTypes.add(identifierTypesFromDB[i]);
+  //     }
+  //     try{
+  //       individualIdentifier = constantIdentifiers[0]["identifier"];
+  //     }
+  //     catch (e){
+  //
+  //     }
+  //
+  //     Navigator.pushReplacementNamed(context, '/homePage');
+  //
+  //     var snackBar = const SnackBar(
+  //       content: Text(
+  //         'LOGIN SUCCESSFUL',
+  //         style: TextStyle(
+  //           color: Colors.black,
+  //           fontSize: 15,
+  //           fontWeight: FontWeight.normal,
+  //         ),
+  //       ),
+  //       backgroundColor: Color.fromARGB(255, 75, 181, 67),
+  //     );
+  //     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //     return;
+  //   }
+  // }
+  Future<int> getIdentifierAndTypes() async {
     var responseIdentifiers = await http.get(
-        Uri.parse("http://10.0.2.2:8081/sky-auth/identifier"),
+        Uri.parse("http://85.159.214.103:8081/sky-auth/identifier"),
         headers: {"access_token": ACCESSTOKEN});
-
     var responseIdentifierTypes = await http.get(
-        Uri.parse('http://10.0.2.2:8081/sky-auth/identifier_type'),
+        Uri.parse('http://85.159.214.103:8081/sky-auth/identifier_type'),
         headers: {"access_token": ACCESSTOKEN});
 
     if (responseIdentifiers.statusCode == 200 ||
@@ -229,23 +305,42 @@ class _LoginState extends State<Login> {
       for (int i = 0; i < identifierTypesFromDB.length; i++) {
         constantIdentifierTypes.add(identifierTypesFromDB[i]);
       }
-      individualIdentifier =  constantIdentifiers[0]["identifier"];
-
-      Navigator.pushNamed(context, '/homePage');
-
-      var snackBar = const SnackBar(
-        content: Text(
-          'LOGIN SUCCESSFUL',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        backgroundColor: Color.fromARGB(255, 75, 181, 67),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+      try {
+        individualIdentifier = constantIdentifiers[0]["identifier"];
+      } catch (e) {}
     }
+
+    return 1;
+  }
+
+  Future<int> getPrograms() async {
+    var programsFromDB;
+
+    var response = await http.get(
+      Uri.parse("http://85.159.214.103:8081/sky-auth/programs"),
+      headers: {"access_token": ACCESSTOKEN},
+    );
+
+    programsFromDB = jsonDecode(response.body);
+    programs = programsFromDB;
+    return 1;
+  }
+
+  Future<int> getStatusCodes() async {
+    var response = await http.get(
+      Uri.parse("http://85.159.214.103:8081/sky-auth/auth_details?user_id=" +
+          USERID.toString() +
+          "&identifier=" +
+          individualIdentifier),
+      headers: {"access_token": ACCESSTOKEN},
+    );
+    if (response.statusCode == 200) {
+      try {
+        authCodes = jsonDecode(response.body);
+      } catch (e) {
+        authCodes = [jsonDecode(response.body)];
+      }
+    }
+    return 1;
   }
 }

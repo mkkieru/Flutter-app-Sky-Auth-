@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:sky_auth/components/background.dart';
 import 'package:sky_auth/components/loginButton.dart';
@@ -198,8 +200,6 @@ void signUp(String fName, String lName, String uName, String natID, String pass,
     //     body: jsonEncode(userSignupDetails));
 
     LinkedHashMap<String, dynamic> responseBody = jsonDecode(response.body);
-
-    print(responseBody.values);
 
     if (response.statusCode == 200) {
       Navigator.pushNamed(context, '/homePage');
