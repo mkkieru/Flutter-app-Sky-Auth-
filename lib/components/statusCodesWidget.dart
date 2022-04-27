@@ -1,15 +1,19 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables, must_be_immutable
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:sky_auth/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:sky_auth/local_auth_api.dart';
+
+import '../API/ApiFunctions.dart';
 
 class StatusCodeWidget extends StatefulWidget {
   StatusCodeWidget(this.programName, this.timeToLive, this.authCode, {Key? key})
@@ -23,14 +27,28 @@ class StatusCodeWidget extends StatefulWidget {
   State<StatusCodeWidget> createState() => _StatusCodeWidgetState();
 }
 
-class _StatusCodeWidgetState extends State<StatusCodeWidget> {
+class _StatusCodeWidgetState extends State<StatusCodeWidget>
+    with TickerProviderStateMixin {
   var timer;
+  var angle = 0;
+  var controllerValue;
+  var visibility = false;
+  var notSet = true;
+
+  late AnimationController controller;
+
+  void setAnimationController() {
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: widget.timeToLive),
+    );
+  }
 
   void startTimer() {
-    timer = Timer(const Duration(seconds: 1), () {
-      if(mounted) {
-        if (widget.timeToLive == 0) {
-          getThisStatusCode();
+    timer = Timer(const Duration(seconds: 1), () async {
+      if (mounted) {
+        if (widget.timeToLive <= 0) {
+          await getThisStatusCode();
         } else {
           setState(() {
             widget.timeToLive = widget.timeToLive - 1;
@@ -47,72 +65,216 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget> {
   }
 
   @override
+  void initState() {
+    setAnimationController();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    setAnimationController();
     startTimer();
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      child: Card(
-        child: ListTile(
-          leading: Text(
-            widget.timeToLive.toString(),
-            style: const TextStyle(
-              fontSize: 25,
-              color: kPrimary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-          title: Text(
-            widget.authCode,
-            style: const TextStyle(
-              fontSize: 30,
-              color: kPrimary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-          trailing: Text(
-            widget.programName,
-            style: const TextStyle(
-              color: kPrimary,
-              fontSize: 15,
-            ),
-          ),
-          onTap: () async {
-            final isAuthenticated = await LocalAuthApi.authenticate();
-            if (isAuthenticated) {
-              await authenticate();
-            }
-            if (!isAuthenticated) {
-              var snackBar = const SnackBar(
-                content: Text(
-                  'Fingerprint not registered',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                backgroundColor: Color.fromARGB(255, 255, 204, 204),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            }
-          },
-          onLongPress: () {
-            Clipboard.setData(
-              ClipboardData(text: widget.authCode),
-            );
-            const snackBar = SnackBar(
-              backgroundColor: Color.fromARGB(255, 75, 181, 67),
-              content: Text(
-                'Code Copied',
-                style: TextStyle(fontSize: 20),
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+          child: ListTile(
+            leading: Text(
+              widget.timeToLive.toString(),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
-            );
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          },
+            ),
+            // leading: CircularProgressIndicator(
+            //   value: controller.value,
+            // ),
+            title: SizedBox(
+              //width: size.width * 0.6,
+              child: Text(
+                widget.authCode,
+                maxLines: 2,
+                style: const TextStyle(
+                  //fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            trailing: SizedBox(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.programName,
+                    style: const TextStyle(
+                      fontSize: 10,
+                    ),
+                  ),
+                  Transform.rotate(
+                    angle: angle * 3.142 / 180,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        size: 25,
+                      ),
+                      onPressed: () {
+                        if (angle == 0) {
+                          timer.cancel();
+                          setState(() {
+                            angle = 180;
+                            visibility = true;
+                          });
+                        } else if (angle == 180) {
+                          timer.cancel();
+                          setState(() {
+                            angle = 0;
+                            visibility = false;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            onLongPress: () {
+              Clipboard.setData(
+                ClipboardData(text: widget.authCode),
+              );
+              Fluttertoast.showToast(
+                  msg: "Code copied",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: const Color.fromARGB(255, 75, 181, 67),
+                  textColor: Colors.white,
+                  fontSize: 16.0);
+            },
+            onTap: () {
+              if (angle == 0) {
+                timer.cancel();
+                setState(() {
+                  angle = 180;
+                  visibility = true;
+                });
+              } else if (angle == 180) {
+                timer.cancel();
+                setState(() {
+                  angle = 0;
+                  visibility = false;
+                });
+              }
+            },
+          ),
         ),
-      ),
+        Visibility(
+          visible: visibility,
+          child: Container(
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        scan();
+                      },
+                      icon: const Icon(Icons.qr_code),
+                      iconSize: 30,
+                    ),
+                    const Text(
+                      "Scan QR",
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: size.width * 0.05,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        try {
+                          final isAuthenticated =
+                              await LocalAuthApi.authenticate();
+                          if (isAuthenticated) {
+                            await authenticate(widget.programName);
+                          }
+                          if (!isAuthenticated) {
+                            Fluttertoast.showToast(
+                                msg: "Biometric not registered on device ",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                          }
+                        } catch (e) {
+                          Fluttertoast.showToast(
+                              msg: "Please use code for authentication",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                          return;
+                        }
+                      },
+                      icon: const Icon(Icons.fingerprint),
+                      iconSize: 30,
+                    ),
+                    const Text(
+                      "use biometric",
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: size.width * 0.05,
+                ),
+                Column(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(text: widget.authCode),
+                        );
+                        Fluttertoast.showToast(
+                            msg: "Code copied",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor:
+                                const Color.fromARGB(255, 75, 181, 67),
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      },
+                      icon: const Icon(Icons.copy),
+                      iconSize: 30,
+                    ),
+                    const Text(
+                      "copy code",
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const Divider(
+          thickness: 2,
+        ),
+      ],
     );
   }
 
@@ -132,7 +294,7 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget> {
     };
 
     var response = await http.post(
-      Uri.parse("http://85.159.214.103:8081/sky-auth/auth_details/specific"),
+      Uri.parse("http://$ipAddress:8081/sky-auth/auth_details/specific"),
       headers: {"access_token": ACCESSTOKEN},
       body: jsonEncode(body),
     );
@@ -142,14 +304,16 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget> {
         if (authCodes[i]["program_id"] == id &&
             authCodes[i]["identifier"] == individualIdentifier) {
           var newAuthdetails = jsonDecode(response.body);
+          print(newAuthdetails);
 
-          setState(() {
-            widget.timeToLive = newAuthdetails["time_to_live"] -
-                newAuthdetails["age"]["wholeSeconds"];
-            //widget.timeToLive = newAuthdetails["time_to_live"];
-            widget.authCode = newAuthdetails["auth_code"];
-          });
-
+          if (newAuthdetails != null) {
+            setState(() {
+              widget.timeToLive = newAuthdetails["time_to_live"] -
+                  newAuthdetails["age"]["wholeSeconds"] -
+                  1;
+              widget.authCode = newAuthdetails["auth_code"];
+            });
+          }
           authCodes.removeAt(i);
           authCodes.add(jsonDecode(response.body));
           break;
@@ -160,62 +324,52 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget> {
     }
   }
 
-  authenticate() async {
-    var identifier_type;
-    for (int i = 0; i < constantIdentifiers.length; i++) {
-      if (constantIdentifiers[i]["identifier"] == individualIdentifier) {
-        identifier_type = constantIdentifiers[i]["identifier_type"];
-      }
-    }
+  scan() async {
+    var status = await Permission.camera.request();
 
-    var progID;
-    for (int i = 0; i < programs.length; i++) {
-      if (programs[i]["program_name"] == widget.programName) {
-        progID = programs[i]["program_id"];
-      }
-    }
+    if (status.isGranted) {
+      // Either the permission was already granted before or the user just granted it.
+      var cameraScanResult = await scanner.scan();
+      Map qrData = jsonDecode(cameraScanResult!);
 
-    Map<String, dynamic> body = {
-      "identifier": individualIdentifier,
-      "identifier_type": identifier_type,
-      "program_id": progID
-    };
+      qrData.remove("auth_code");
 
-    print(individualIdentifier);
-    print(identifier_type);
-    print(progID);
-
-    var response = await http.post(
-      Uri.parse(
-          "http://85.159.214.103:8081/sky-auth/authorization/biometric/code_confirmation"),
-      body: jsonEncode(body),
-    );
-    if (response.statusCode == 200) {
-      var snackBar = const SnackBar(
-        content: Text(
-          'AUTHENTICATION SUCCESSFUL',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        backgroundColor: Color.fromARGB(255, 75, 181, 67),
+      var response = await http.post(
+        Uri.parse(
+            "http://$ipAddress:8081/sky-auth/authorization/biometric/code_confirmation"),
+        headers: {"access_token": ACCESSTOKEN},
+        body: jsonEncode(qrData),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (response.statusCode == 200) {
+        Fluttertoast.showToast(
+            msg: "Authentication successful",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: const Color.fromARGB(255, 75, 181, 67),
+            textColor: Colors.white,
+            fontSize: 16.0);
+      } else {
+        Fluttertoast.showToast(
+            msg: "Authentication failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        return;
+      }
     } else {
-      var snackBar = const SnackBar(
-        content: Text(
-          'Please use code',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 15,
-            fontWeight: FontWeight.normal,
-          ),
-        ),
-        backgroundColor: Color.fromARGB(255, 255, 204, 204),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      Fluttertoast.showToast(
+          msg: "Unknown QR code",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      return;
     }
   }
 }

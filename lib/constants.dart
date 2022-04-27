@@ -2,14 +2,25 @@
 
 import 'package:flutter/material.dart';
 
-const kPrimary = Color(0xFF6F35A5);
+//const ipAddress = "10.0.2.2";
+const ipAddress = "85.159.214.103";
+
+const kPrimary = Color(0xFF5175F1);
 const kPrimaryLightColor = Color(0xFFD5CEE3);
 const kPrimaryLightColorHomePageBackground = Color(0xFFDFDFEA);
 // ignore: prefer_typing_uninitialized_variables
 
-var ACCESSTOKEN;
+var defaultValue = constantIdentifierTypes[0]["identifier_type"];
 
+
+var ACCESSTOKEN;
 int USERID = 0;
+
+var programStatus = [];
+var programIDs;
+var USERNAME;
+var INITIALS;
+
 var authCodes = [];
 
 var individualIdentifier = "";
@@ -30,7 +41,6 @@ List constantIdentifierTypes = [
     "date_updated": "2022-02-04 07:25:19.686"
   }
 ];
-//{identifier_id: 3, user_id: 58, identifier_type: mail, date_created: 2022-03-12 09:20:26.499, date_updated: 2022-03-12 09:20:26.499, identifier: mkieru55@gmail.com}, {identifier_id: 4, user_id: 58, identifier_type: KRA PIN, date_created: 2022-03-12 09:20:45.654, date_updated: 2022-03-12 09:20:45.654, identifier: A00JHGHG4567HGV}];
 
 List constantIdentifiers = [
   {"Message": "No records found"},

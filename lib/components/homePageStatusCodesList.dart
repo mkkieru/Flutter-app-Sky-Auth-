@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sky_auth/components/background.dart';
 import 'package:sky_auth/components/statusCodesWidget.dart';
 import 'package:sky_auth/constants.dart';
@@ -21,16 +22,6 @@ class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Stack(children: [
-      Background(
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Image.asset(
-            'assets/images/login_bottom.png',
-            width: size.width * 0.6,
-          ),
-        ),
-      ),
       ListView.builder(
         itemCount: authCodes.length,
         itemBuilder: (BuildContext context, int index) {
@@ -52,17 +43,30 @@ class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
               authCodes[index]["auth_code"],
             );
           } catch (e) {
-            return const Card(
-              child: ListTile(
-                title: Text(
-                  "No status codes found",
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: kPrimary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+            return Container(
+              height: size.height - size.height * 0.15,
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    "assets/icons/missing.svg",
+                    height: size.height * 0.40,
                   ),
-                ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    alignment: Alignment.center,
+                    width: size.width ,
+                    child: const Text(
+                      "NO CODES FOUND",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Color(0xFF2661FA),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }

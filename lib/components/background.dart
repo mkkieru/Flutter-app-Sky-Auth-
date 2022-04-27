@@ -7,6 +7,7 @@ class Background extends StatelessWidget {
   Widget child ;
 
   Background (this.child, {Key? key}) : super(key: key);
+  //Background ({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,21 +22,43 @@ class Background extends StatelessWidget {
         children: <Widget>[
           Positioned(
             top: 0,
-            left: 0,
+            right: 0,
             child: Image.asset(
-              'assets/images/main_top.png',
-              width: size.width * 0.4,
+              'assets/images/top1.png',
+              //width: size.width * 1,
+            ),
+          ),
+          Positioned(
+            top: 0,
+            child: Image.asset(
+              'assets/images/top2.png',
+              //width: size.width * 1,
             ),
           ),
           Positioned(
             bottom: 0,
-            left: 0,
             child: Image.asset(
-              'assets/images/main_bottom.png',
-              width: size.width * 0.3,
+              'assets/images/bottom1.png',
+              //width: size.width * 1,
             ),
           ),
+          Positioned(
+            bottom: 0,
+            child: Image.asset(
+              'assets/images/bottom2.png',
+              //width: size.width * 1,
+            ),
+          ),
+          // Positioned(
+          //   bottom: 0,
+          //   left: 0,
+          //   child: Image.asset(
+          //     'assets/images/main_bottom.png',
+          //     width: size.width * 0.3,
+          //   ),
+          // ),
           child,
+          //child,
         ],
       ),
     );

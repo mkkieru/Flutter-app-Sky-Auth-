@@ -6,6 +6,8 @@ buildscript {
     }
 
     dependencies {
+        classpath 'com.facebook.stetho:stetho:1.5.1'
+        classpath 'com.android.support:appcompat-v7:28.0.0'
         classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         //api "androidx.core:core:1.7.0"

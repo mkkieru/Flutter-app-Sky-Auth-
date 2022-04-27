@@ -1,20 +1,22 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:sky_auth/homePage.dart';
+import 'package:sky_auth/views/identifier/identifier.dart';
 import 'package:sky_auth/views/login/login.dart';
 import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
 
-
-import 'views/identifier.dart';
 import 'views/signup/signup.dart';
 
-
-//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
-
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(const MyApp());
+  });
+
   FlutterCryptography.enable();
 }
 
@@ -24,24 +26,29 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mark Kieru',
       theme: ThemeData(
         primaryColor: kPrimary,
-        fontFamily: 'Cabin',
-        //brightness: Brightness.dark,
+        fontFamily: 'Roboto',
         brightness: Brightness.light,
       ),
-      //home: HomePage(),
-      home: const WelcomeScreen(),
+      darkTheme: ThemeData(
+        primaryColor: kPrimary,
+        fontFamily: 'Roboto',
+        brightness: Brightness.dark,
+      ),
+      home: const LoaderOverlay(
+        child: WelcomeScreen(),
+      ),
       routes: {
-        '/login': (context) => const Login(),
-        '/signup': (context) => const Signup(),
-        '/homePage': (context) => const HomePage(),
-        '/identifiers': (context) => const Identifiers(),
+        '/login': (context) => const LoaderOverlay(child: Login()),
+        '/signup': (context) =>const LoaderOverlay(child: Signup()),
+        '/homePage': (context) =>const LoaderOverlay(child: HomePage()),
+        '/identifiers': (context) => const LoaderOverlay(child: Identifiers()),
       },
     );
   }
-
 }
