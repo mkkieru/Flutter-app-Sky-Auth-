@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:sky_auth/constants.dart';
@@ -34,7 +35,6 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       _defaultValue = "No identifiers";
     }
     super.initState();
-
   }
 
   @override
@@ -43,7 +43,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     var brightness = SchedulerBinding.instance!.window.platformBrightness;
     bool isDarkMode = brightness == Brightness.dark;
     Color COLOR = Colors.black;
-    if(isDarkMode) {
+    if (isDarkMode) {
       COLOR = Colors.white;
     }
     try {
@@ -96,13 +96,75 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                           ),
                         ),
                       ),
+                      // DropdownButtonHideUnderline(
+                      //   child: DropdownButton(
+                      //     isExpanded: true,
+                      //     value: _defaultValue,
+                      //     style:  TextStyle(
+                      //       fontSize: 16,
+                      //       color: COLOR,
+                      //     ),
+                      //     onChanged: (newValue) async {
+                      //       if (newValue.toString() == "No identifiers") {
+                      //         _defaultValue = newValue.toString();
+                      //         return;
+                      //       }
+                      //       _defaultValue = newValue.toString();
+                      //       individualIdentifier = newValue.toString();
+                      //
+                      //       await getStatusCodes();
+                      //       Navigator.pushReplacementNamed(
+                      //           context, '/homePage');
+                      //     },
+                      //     items: constantIdentifiers.map((identifiers) {
+                      //       try {
+                      //         return DropdownMenuItem(
+                      //           child: SizedBox(
+                      //             child: Row(
+                      //               children: [
+                      //                 Text(
+                      //                   identifiers['identifier'],
+                      //                   style: const TextStyle(
+                      //                     fontSize: 16,
+                      //                   ),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //           value: identifiers['identifier'],
+                      //         );
+                      //       } catch (e) {
+                      //         return const DropdownMenuItem(
+                      //           child: Text(
+                      //             "No identifiers",
+                      //             style: TextStyle(
+                      //               fontSize: 16,
+                      //             ),
+                      //           ),
+                      //           value: "No identifiers",
+                      //         );
+                      //       }
+                      //     }).toList(),
+                      //   ),
+                      // ),
                       DropdownButtonHideUnderline(
-                        child: DropdownButton(
+                        child: DropdownButton2(
                           isExpanded: true,
                           value: _defaultValue,
-                          style:  TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             color: COLOR,
+                          ),
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.black45,
+                          ),
+                          iconOnClick: const Icon(
+                            Icons.arrow_drop_up,
+                            color: Colors.black45,
+                          ),
+                          dropdownDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
                           ),
                           onChanged: (newValue) async {
                             if (newValue.toString() == "No identifiers") {
@@ -146,7 +208,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                             }
                           }).toList(),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -182,68 +244,36 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      actionsPadding: const EdgeInsets.all(10),
-                      title: const Text(
-                        "Are you sure you want to log out?",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      actions: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              //borderRadius: BorderRadius.circular(20),
-                              // ignore: deprecated_member_use
-                              child: FlatButton(
-                                // ignore: prefer_const_constructors
-                                //padding: EdgeInsets.all(5),
-                                color: kPrimary,
-                                onPressed: () async {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text(
-                                  'No',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            ClipRRect(
-                              //borderRadius: BorderRadius.circular(20),
-                              // ignore: deprecated_member_use
-                              child: FlatButton(
-                                // ignore: prefer_const_constructors
-                                //padding: EdgeInsets.all(5),
-                                color: kPrimary,
-                                onPressed: () async {
-                                  final SharedPreferences prefs =
-                                      await SharedPreferences.getInstance();
+                      content: const Text("Are you sure you want to logout?"),
+                      actions: <Widget>[
+                        FlatButton(
+                          child: const Text(
+                            "No",
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        FlatButton(
+                          child: const Text(
+                            "Yes",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          onPressed: () async {
+                            final SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
 
-                                  prefs.setString('user_id', "");
-                                  prefs.setString('ip_address', "");
-                                  prefs.setString('access_token', "");
-                                  prefs.setString('username', "");
+                            prefs.setString('user_id', "");
+                            prefs.setString('ip_address', "");
+                            prefs.setString('access_token', "");
+                            prefs.setString('username', "");
 
-                                  Navigator.pop(context);
-                                  Navigator.pushReplacementNamed(
-                                      context, '/login');
-                                },
-                                child: const Text(
-                                  'Yes',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
+                            Navigator.pop(context);
+                            Navigator.pushReplacementNamed(context, '/login');
+                          },
+                        ),
                       ],
-                      elevation: 20,
                     ),
                   );
                 },

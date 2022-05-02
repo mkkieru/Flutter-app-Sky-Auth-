@@ -1,13 +1,14 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:focused_menu/focused_menu.dart';
+import 'package:focused_menu/modals.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:http/http.dart' as http;
-import 'package:sky_auth/views/signup/signup.dart';
 import 'dart:convert';
 
 import 'API/ApiFunctions.dart';
@@ -24,22 +25,71 @@ class HomePage extends StatefulWidget {
   Duration get transitionDuration => const Duration(milliseconds: 0);
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   var selectedIndex = 0;
   var barcode;
+  var items = [
+    const Text(
+      'Logout',
+      style: TextStyle(
+        fontSize: 20,
+        color: Colors.black,
+      ),
+    )
+  ];
+  var title ;
 
   @override
   void initState() {
     super.initState();
     getProgramsForIdentifier();
+    WidgetsBinding.instance?.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // --
+        await getStatusCodes();
+        Navigator.of(context).pushReplacementNamed('/homePage');
+        break;
+      case AppLifecycleState.inactive:
+        // TODO: Handle this case.
+        break;
+      case AppLifecycleState.paused:
+        // TODO: Handle this case.
+        break;
+      case AppLifecycleState.detached:
+        // TODO: Handle this case.
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    if (constantIdentifiers.isNotEmpty) {
-      getStatusCodes();
+    if (individualIdentifier == "") {
+      title =  const Text(
+        "Sky Auth",
+        style: TextStyle(
+          fontSize: 16,
+        ),
+      );
+    }else {
+      title = Text(
+        individualIdentifier,
+        style: const TextStyle(
+          fontSize: 16,
+        ),
+      );
     }
+    var size = MediaQuery.of(context).size;
     return SafeArea(
       child: Scaffold(
         drawer: const DrawerWidget(),
@@ -49,22 +99,62 @@ class _HomePageState extends State<HomePage> {
           elevation: 10,
           title: SizedBox(
             width: size.width * 0.6,
-            child: const Text(
-              'Sky-Auth',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                letterSpacing: 3,
-              ),
-            ),
+            child: title,
           ),
           actions: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: CircleAvatar(
-                radius: size.height * 0.035,
-                backgroundColor: Colors.brown.shade800,
-                child: Text(INITIALS),
+              child: FocusedMenuHolder(
+                blurBackgroundColor: Colors.blueGrey[900],
+                openWithTap: true,
+                onPressed: () {},
+                animateMenuItems: true,
+                menuItems: items
+                    .map((e) => FocusedMenuItem(
+                    title: e ,
+                    onPressed: () async {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          content: const Text("Are you sure you want to logout?"),
+                          actions: <Widget>[
+                            FlatButton(
+                              child: const Text(
+                                "No",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            FlatButton(
+                              child: const Text(
+                                "Yes",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              onPressed: () async {
+                                final SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+
+                                prefs.setString('user_id', "");
+                                prefs.setString('ip_address', "");
+                                prefs.setString('access_token', "");
+                                prefs.setString('username', "");
+
+                                Navigator.pop(context);
+                                Navigator.pushReplacementNamed(context, '/login');
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }))
+                    .toList(),
+                child: CircleAvatar(
+                  radius: size.height * 0.035,
+                  backgroundColor: Colors.brown.shade800,
+                  child: Text(INITIALS),
+                ),
               ),
             ),
           ],
@@ -75,16 +165,38 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         floatingActionButton: ExpandableFab(
-          distance: 100.0,
+          distance: 90.0,
           children: [
-            ActionButton(
-              onPressed: scan,
-              icon: const Icon(Icons.qr_code, color: Colors.black),
+            Row(
+              children: [
+                const Text("Scan QR Code"),
+                SizedBox(
+                  width: size.width * 0.03,
+                ),
+                ActionButton(
+                  onPressed: scan,
+                  icon: const Icon(
+                    Icons.qr_code,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            ActionButton(
-              onPressed: () =>
-                  Navigator.of(context).pushReplacementNamed("/identifiers"),
-              icon: const Icon(Icons.add, color: Colors.black),
+            Row(
+              children: [
+                const Text("Add Identifier"),
+                SizedBox(
+                  width: size.width * 0.03,
+                ),
+                ActionButton(
+                  onPressed: () => Navigator.of(context)
+                      .pushReplacementNamed("/identifiers"),
+                  icon: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -106,7 +218,7 @@ class _HomePageState extends State<HomePage> {
       var token = qrData["token"];
       var exists = false;
 
-      try{
+      try {
         if (constantIdentifiers != null && constantIdentifiers.isNotEmpty) {
           for (int i = 0; i < constantIdentifiers.length; i++) {
             try {
@@ -120,17 +232,18 @@ class _HomePageState extends State<HomePage> {
           }
         }
         if (exists) {
-          await confirmIdentifier(context,ident, identType, token);
-          Navigator.of(context).pushReplacementNamed('/homePage');
-
+          await confirmIdentifier(ident, identType, token);
+          individualIdentifier = ident;
+          Get.off(HomePage());
           return;
         } else {
-          await addIdentifierToDB(ident, identType,context);
-          await confirmIdentifier(context,ident, identType, token);
-          Navigator.of(context).pushReplacementNamed('/homePage');
+          await addIdentifierToDB(ident, identType);
+          await confirmIdentifier(ident, identType, token);
+          individualIdentifier = ident;
+          Get.off(HomePage());
           return;
         }
-      }catch(e){
+      } catch (e) {
         Fluttertoast.showToast(
             msg: "Unknown QR code",
             toastLength: Toast.LENGTH_SHORT,
@@ -242,19 +355,19 @@ class _ExpandableFabState extends State<ExpandableFab>
 
   List<Widget> _buildExpandingActionButtons() {
     final children = <Widget>[];
-    final count = widget.children.length;
-    final step = 90.0 / (count - 1);
-    for (var i = 0, angleInDegrees = 0.0;
-        i < count;
-        i++, angleInDegrees += step) {
+    var distance = 60.0;
+    var count = widget.children.length;
+    for (var i = 0; i < count; i++) {
       children.add(
         _ExpandingActionButton(
-          directionInDegrees: angleInDegrees,
-          maxDistance: widget.distance,
+          directionInDegrees: 90,
+          maxDistance: distance,
           progress: _expandAnimation,
           child: widget.children[i],
         ),
       );
+
+      distance = distance + 60;
     }
     return children;
   }
@@ -348,7 +461,7 @@ class ActionButton extends StatelessWidget {
       child: IconButton(
         onPressed: onPressed,
         icon: icon,
-        iconSize: 30,
+        iconSize: 25,
       ),
     );
   }

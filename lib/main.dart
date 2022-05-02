@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:sky_auth/homePage.dart';
@@ -27,7 +28,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return MaterialApp(
+
+    precacheImage(const AssetImage("assets/images/add.png"), context);
+    precacheImage(const AssetImage("assets/images/bottom1.png"), context);
+    precacheImage(const AssetImage("assets/images/bottom2.png"), context);
+    precacheImage(const AssetImage("assets/images/login_bottom.png"), context);
+    precacheImage(const AssetImage("assets/images/main.png"), context);
+    precacheImage(const AssetImage("assets/images/main_bottom.png"), context);
+    precacheImage(const AssetImage("assets/images/main_top.png"), context);
+    precacheImage(const AssetImage("assets/images/notFound.png"), context);
+    precacheImage(const AssetImage("assets/images/signup_top.png"), context);
+    precacheImage(const AssetImage("assets/images/top1.png"), context);
+    precacheImage(const AssetImage("assets/images/top2.png"), context);
+    precacheImage(const AssetImage("assets/images/user.png"), context);
+
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mark Kieru',
       theme: ThemeData(

@@ -129,7 +129,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     checkLoginState(context);
   }
-
   void checkLoginState(var context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -151,7 +150,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-
   confirmAccessTokenIsValid(
       var userId, var ip_addressLogin, var access_token) async {
     var body = {"user_id": userId, "ip_address": ip_addressLogin};
@@ -164,10 +162,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       ACCESSTOKEN = access_token;
       USERID = userId;
       await getIdentifierAndTypes();
-      await getPrograms();
+      await getPrograms(context);
       await getStatusCodes();
-      Navigator.of(context).pushReplacementNamed("/homePage");
-      context.loaderOverlay.hide();
+      if(mounted){
+        Navigator.of(context).pushReplacementNamed("/homePage");
+        context.loaderOverlay.hide();
+      }
     }
   }
 }

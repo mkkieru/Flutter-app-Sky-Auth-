@@ -1,6 +1,7 @@
 // ignore_for_file: unused_import, deprecated_member_use
 
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -63,11 +64,12 @@ class _IdentifiersState extends State<Identifiers> {
             children: [
               Container(
                 alignment: Alignment.center,
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: TextField(
                   onChanged: (value) {
-                    VALUE = _identifier.text;
+                    setState(() {
+                      VALUE = _identifier.text;
+                    });
                   },
                   style: const TextStyle(fontSize: 14),
                   controller: _identifier,
@@ -83,21 +85,21 @@ class _IdentifiersState extends State<Identifiers> {
                 thickness: 2,
               ),
               Container(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                alignment: Alignment.centerLeft,
-                margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
+                //padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                alignment: Alignment.center,
+                margin: const EdgeInsets.fromLTRB(10, 5, 10, 0),
                 child: const Text(
                   'IDENTIFIERS',
                   style: TextStyle(
-                    fontSize: 16,
+                    color: Colors.blueAccent,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
               Container(
-                height: size.height * 0.45,
-                alignment: Alignment.centerLeft,
-                //margin: const EdgeInsets.all(10),
-                margin: const EdgeInsets.symmetric(horizontal: 30),
+                height: size.height * 0.6 ,
                 child: ListView.builder(
                   itemCount: constantIdentifiers.length,
                   itemBuilder: (context, int index) {
@@ -128,12 +130,14 @@ class _IdentifiersState extends State<Identifiers> {
                           }
                         }
                       } catch (e) {
+                        //
                       }
 
                       return FocusedMenuHolder(
                         blurBackgroundColor: Colors.blueGrey[900],
-                        openWithTap: false,
+                        openWithTap: true,
                         onPressed: () {},
+                        animateMenuItems: true,
                         menuItems: programNames
                             .map(
                               (e) => FocusedMenuItem(
@@ -404,57 +408,122 @@ class _CustomDropDownState extends State<CustomDropDown> {
     return Column(
       children: [
         Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-          decoration: const BoxDecoration(
-            color: kPrimaryLightColor,
-          ),
-          child: DropdownButton(
-            value: defaultValue,
-            style: TextStyle(
-              fontSize: 20,
-              color: COLOR,
-            ),
-            onChanged: (newValue) {
-              setState(() {
-                defaultValue = newValue;
-              });
-            },
-            items: constantIdentifierTypes.map((identifierType) {
-              return DropdownMenuItem(
-                child: Text(
-                  identifierType["identifier_type"],
-                  style: const TextStyle(fontSize: 16),
+          margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                height: MediaQuery.of(context).size.height * 0.06,
+                width: MediaQuery.of(context).size.width * 0.35,
+
+                //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: DropdownButtonFormField2(
+                  value: defaultValue,
+                  decoration: InputDecoration(
+                    //Add isDense true and zero Padding.
+                    //Add Horizontal padding using buttonPadding and Vertical padding by increasing buttonHeight instead of add Padding here so that The whole TextField Button become clickable, and also the dropdown menu open under The whole TextField Button.
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    //Add more decoration as you want here
+                    //Add label If you want but add hint outside the decoration to be aligned in the button perfectly.
+                  ),
+                  isExpanded: true,
+                  hint: const Text(
+                    'Select Identifier Type',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.black45,
+                  ),
+                  iconOnClick: const Icon(
+                    Icons.arrow_drop_up,
+                    color: Colors.black45,
+                  ),
+                  iconSize: 30,
+                  buttonHeight: 60,
+                  buttonPadding: const EdgeInsets.only(left: 20, right: 10),
+                  dropdownDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  onChanged: (newValue) {
+                      defaultValue = newValue;
+                  },
+                  items: constantIdentifierTypes.map((identifierType) {
+                    return DropdownMenuItem(
+                      child: Text(
+                        identifierType["identifier_type"],
+                        //style: const TextStyle(fontSize: 16),
+                      ),
+                      value: identifierType["identifier_type"],
+                    );
+                  }).toList(),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select identifier.';
+                    }
+                  },
                 ),
-                value: identifierType["identifier_type"],
-              );
-            }).toList(),
-          ),
-        ),
-        Container(
-          alignment: Alignment.center,
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-          color: kPrimary,
-          child: FlatButton(
-            onPressed: () async {
-              FocusManager.instance.primaryFocus?.unfocus();
-              String Identifier = widget.identifier;
-              print(Identifier);
-              String identifierType = defaultValue;
-              await addIdentifierToDB(Identifier, identifierType, context);
-              Navigator.of(context).pushReplacementNamed("/identifiers");
-              setState(() {});
-            },
-            child: const Text(
-              'ADD IDENTIFIER',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
               ),
-            ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () async {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  String Identifier = widget.identifier;
+                  String identifierType = defaultValue;
+                  print(identifierType);
+                  await addIdentifierToDB(Identifier, identifierType);
+                  Navigator.of(context).pushReplacementNamed("/identifiers");
+                  setState(() {});
+                },
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.06,
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.blue,
+                          Colors.lightBlueAccent,
+                        ]),
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // ignore: prefer_const_literals_to_create_immutables
+                    children: [
+                      const Text(
+                        "Add Identifier",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Container(
+                          //padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle, color: Colors.white),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.lightBlueAccent,
+                          ))
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 }
+
+
+
+

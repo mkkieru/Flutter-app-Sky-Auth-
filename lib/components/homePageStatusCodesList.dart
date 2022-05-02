@@ -40,18 +40,19 @@ class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
               progName,
               authCodes[index]["time_to_live"] -
                   authCodes[index]["age"]["wholeSeconds"],
+              authCodes[index]["time_to_live"],
               authCodes[index]["auth_code"],
             );
           } catch (e) {
             return Container(
-              height: size.height - size.height * 0.15,
+              height: size.height - size.height * 0.3,
               alignment: Alignment.center,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SvgPicture.asset(
                     "assets/icons/missing.svg",
-                    height: size.height * 0.40,
+                    height: size.height * 0.30,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -61,7 +62,7 @@ class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
                       "NO CODES FOUND",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: 18,
                         color: Color(0xFF2661FA),
                       ),
                     ),

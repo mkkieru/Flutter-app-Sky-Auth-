@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +12,7 @@ import 'package:sky_auth/constants.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:collection';
 
-confirmIdentifier(context, identifier, identifierType, text) async {
+confirmIdentifier(identifier, identifierType, text) async {
   var body = {
     "identifier": identifier,
     "identifier_type": identifierType,
@@ -68,11 +70,9 @@ getProgramsForIdentifier() async {
               "status": programIDs[i]["status"]
             });
           }
-          print("Success : $programIDs");
 
         }catch(e){
           programIDs = null;
-          print("IDS ERROR : $programIDs");
         }
     }
   } catch (e) {
@@ -172,7 +172,7 @@ authenticate(var programName) async {
   }
 }
 
-addIdentifierToDB(String identifier, String identifierType, context) async {
+addIdentifierToDB(String identifier, String identifierType) async {
   if (identifier == null || identifier == "") {
     Fluttertoast.showToast(
         msg: "Identifier can't be empty",
@@ -270,7 +270,7 @@ void LoginToApp(var name, var pass, var context) async {
     INITIALS = "${USERNAME[0]}${USERNAME[1]}";
 
     await getIdentifierAndTypes();
-    await getPrograms();
+    await getPrograms(context);
     await getStatusCodes();
 
     Navigator.pushReplacementNamed(context, '/homePage');
@@ -343,7 +343,7 @@ Future<int> getIdentifierAndTypes() async {
   return 1;
 }
 
-Future<int> getPrograms() async {
+Future<int> getPrograms(var context) async {
   var programsFromDB;
 
   var response = await http.get(
@@ -352,7 +352,11 @@ Future<int> getPrograms() async {
   );
 
   programsFromDB = jsonDecode(response.body);
-  programs = programsFromDB;
+ try{
+   programs = programsFromDB;
+ }catch(e){
+   Navigator.of(context).pushReplacementNamed('/login');
+ }
   return 1;
 }
 
