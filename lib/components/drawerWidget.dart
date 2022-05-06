@@ -2,11 +2,8 @@
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../API/ApiFunctions.dart';
 
@@ -40,12 +37,14 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    var brightness = SchedulerBinding.instance!.window.platformBrightness;
-    bool isDarkMode = brightness == Brightness.dark;
+
+    final ThemeData mode = Theme.of(context);
+    var whichMode = mode.brightness;
     Color COLOR = Colors.black;
-    if (isDarkMode) {
+    if (whichMode == Brightness.dark) {
       COLOR = Colors.white;
     }
+
     try {
       if (individualIdentifier != "") {
         _defaultValue = individualIdentifier;
@@ -60,7 +59,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     return Drawer(
       child: Material(
         child: Container(
-          color: Colors.white70,
+          color: Colors.white,
           child: Column(
             children: <Widget>[
               Container(
@@ -76,14 +75,17 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.brown.shade800,
-                        radius: 50,
-                        child: Text(
-                          INITIALS,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.brown.shade800,
+                          radius: 50,
+                          child: Text(
+                            INITIALS,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -92,79 +94,27 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                         child: Text(
                           USERNAME,
                           style: const TextStyle(
+                            color: Colors.white,
                             fontSize: 16,
                           ),
                         ),
                       ),
-                      // DropdownButtonHideUnderline(
-                      //   child: DropdownButton(
-                      //     isExpanded: true,
-                      //     value: _defaultValue,
-                      //     style:  TextStyle(
-                      //       fontSize: 16,
-                      //       color: COLOR,
-                      //     ),
-                      //     onChanged: (newValue) async {
-                      //       if (newValue.toString() == "No identifiers") {
-                      //         _defaultValue = newValue.toString();
-                      //         return;
-                      //       }
-                      //       _defaultValue = newValue.toString();
-                      //       individualIdentifier = newValue.toString();
-                      //
-                      //       await getStatusCodes();
-                      //       Navigator.pushReplacementNamed(
-                      //           context, '/homePage');
-                      //     },
-                      //     items: constantIdentifiers.map((identifiers) {
-                      //       try {
-                      //         return DropdownMenuItem(
-                      //           child: SizedBox(
-                      //             child: Row(
-                      //               children: [
-                      //                 Text(
-                      //                   identifiers['identifier'],
-                      //                   style: const TextStyle(
-                      //                     fontSize: 16,
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           ),
-                      //           value: identifiers['identifier'],
-                      //         );
-                      //       } catch (e) {
-                      //         return const DropdownMenuItem(
-                      //           child: Text(
-                      //             "No identifiers",
-                      //             style: TextStyle(
-                      //               fontSize: 16,
-                      //             ),
-                      //           ),
-                      //           value: "No identifiers",
-                      //         );
-                      //       }
-                      //     }).toList(),
-                      //   ),
-                      // ),
                       DropdownButtonHideUnderline(
                         child: DropdownButton2(
                           isExpanded: true,
                           value: _defaultValue,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: COLOR,
                           ),
                           icon: const Icon(
                             Icons.arrow_drop_down,
-                            color: Colors.black45,
                           ),
                           iconOnClick: const Icon(
                             Icons.arrow_drop_up,
-                            color: Colors.black45,
                           ),
                           dropdownDecoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
+                            color: Colors.grey,
                           ),
                           onChanged: (newValue) async {
                             if (newValue.toString() == "No identifiers") {
@@ -175,8 +125,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                             individualIdentifier = newValue.toString();
 
                             await getStatusCodes();
-                            Navigator.pushReplacementNamed(
-                                context, '/homePage');
+                            Navigator.of(context).pushReplacementNamed('/homePage');
                           },
                           items: constantIdentifiers.map((identifiers) {
                             try {
@@ -187,6 +136,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                       Text(
                                         identifiers['identifier'],
                                         style: const TextStyle(
+                                          color: Colors.white,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -214,10 +164,12 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                 ),
               ),
               ListTile(
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushReplacementNamed("/homePage");
+                onTap: () async {
+                  //Navigator.of(context).pop();
+                  await getStatusCodes();
+                  Navigator.of(context).pushReplacementNamed('/homePage');
                 },
+                leading: const Icon(Icons.home,color: Colors.black,),
                 title: const Text(
                   'Home',
                   style: TextStyle(
@@ -231,8 +183,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   Navigator.pop(context);
                   Navigator.pushReplacementNamed(context, '/identifiers');
                 },
+                leading: const Icon(Icons.credit_card,color: Colors.black,),
                 title: const Text(
-                  'Add Account',
+                  'Identifiers',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 20,
@@ -277,6 +230,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     ),
                   );
                 },
+                leading: const Icon(
+                    Icons.logout,
+                color: Colors.black,),
                 title: const Text(
                   'Logout',
                   style: TextStyle(

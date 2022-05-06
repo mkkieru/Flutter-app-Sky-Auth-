@@ -2,13 +2,11 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:http/http.dart' as http;
@@ -54,45 +52,12 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
     startTimer();
     return Column(
       children: [
         Container(
           margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: ListTile(
-            // leading: CircularCountDownTimer(
-            //   key: UniqueKey(),
-            //   duration: _duration,
-            //   initialDuration: 0,
-            //   controller: _controller,
-            //   width: size.width * 0.13,
-            //   height: size.height * 0.13,
-            //   ringColor: Colors.grey[300]!,
-            //   ringGradient: null,
-            //   fillColor: Colors.blue,
-            //   fillGradient: null,
-            //   backgroundColor: Colors.white,
-            //   backgroundGradient: null,
-            //   strokeWidth: 3.0,
-            //   strokeCap: StrokeCap.round,
-            //   textStyle: const TextStyle(
-            //     fontSize: 16.0,
-            //     color: Colors.black,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            //   textFormat: CountdownTextFormat.S,
-            //   isReverse: true,
-            //   isReverseAnimation: true,
-            //   isTimerTextShown: true,
-            //   autoStart: true,
-            //   onComplete: () async {
-            //     //await getThisStatusCode();
-            //     setState(() {
-            //       //min--;
-            //     });
-            //   },
-            // ),
             leading: Transform(
               alignment: Alignment.center,
               transform: Matrix4.rotationY(3.14159),
@@ -105,7 +70,7 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
                   transform: Matrix4.rotationY(3.14159),
                   child: Text(_duration.toString()),
                 ),
-                progressColor: Colors.blue,
+                progressColor: kPrimaryLightColor,
               ),
             ),
             title: SizedBox(
@@ -255,7 +220,7 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
                             iconSize: 30,
                           ),
                           const Text(
-                            "use biometric",
+                            "Use Biometric",
                             style: TextStyle(fontSize: 13),
                           ),
                         ],
@@ -284,7 +249,7 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
                             iconSize: 30,
                           ),
                           const Text(
-                            "copy code",
+                            "Copy Code",
                             style: TextStyle(fontSize: 13),
                           ),
                         ],
@@ -294,115 +259,9 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
                 ),
               );
             } else {
-              return Visibility(
+              return const Visibility(
                 visible: false,
-                child: Container(
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              scan();
-                              _visibility.value = !_visibility.value;
-                              _angleChanged.value = !_angleChanged.value;
-                            },
-                            icon: const Icon(Icons.qr_code),
-                            iconSize: 30,
-                          ),
-                          const Text(
-                            "Scan QR",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.05,
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              try {
-                                final isAuthenticated =
-                                    await LocalAuthApi.authenticate();
-                                if (isAuthenticated) {
-                                  await authenticate(widget.programName);
-                                }
-                                if (!isAuthenticated) {
-                                  Fluttertoast.showToast(
-                                      msg:
-                                          "Biometric not registered on device ",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.red,
-                                      textColor: Colors.white,
-                                      fontSize: 16.0);
-                                }
-                                _visibility.value = !_visibility.value;
-                                _angleChanged.value = !_angleChanged.value;
-                              } catch (e) {
-                                Fluttertoast.showToast(
-                                    msg: "Please use code for authentication",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 1,
-                                    backgroundColor: Colors.red,
-                                    textColor: Colors.white,
-                                    fontSize: 16.0);
-                                _visibility.value = !_visibility.value;
-                                _angleChanged.value = !_angleChanged.value;
-                                return;
-                              }
-                            },
-                            icon: const Icon(Icons.fingerprint),
-                            iconSize: 30,
-                          ),
-                          const Text(
-                            "use biometric",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.05,
-                      ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(text: widget.authCode),
-                              );
-                              Fluttertoast.showToast(
-                                  msg: "Code copied",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 75, 181, 67),
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                              _visibility.value = !_visibility.value;
-                              _angleChanged.value = !_angleChanged.value;
-                            },
-                            icon: const Icon(Icons.copy),
-                            iconSize: 30,
-                          ),
-                          const Text(
-                            "copy code",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: SizedBox(),
               );
             }
           },
@@ -441,16 +300,18 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
             authCodes[i]["identifier"] == individualIdentifier) {
           var newAuthdetails = jsonDecode(response.body);
           if (newAuthdetails != null) {
-            setState(() {
-              widget.timeRemaining = newAuthdetails["time_to_live"] -
-                  newAuthdetails["age"]["wholeSeconds"] -
-                  1;
-              widget.authCode = newAuthdetails["auth_code"];
-              widget.timeToLive = newAuthdetails["time_to_live"];
-              _duration = newAuthdetails["time_to_live"] -
-                  newAuthdetails["age"]["wholeSeconds"] -
-                  1;
-            });
+            if (mounted) {
+              setState(() {
+                widget.timeRemaining = newAuthdetails["time_to_live"] -
+                    newAuthdetails["age"]["wholeSeconds"] -
+                    1;
+                widget.authCode = newAuthdetails["auth_code"];
+                widget.timeToLive = newAuthdetails["time_to_live"];
+                _duration = newAuthdetails["time_to_live"] -
+                    newAuthdetails["age"]["wholeSeconds"] -
+                    1;
+              });
+            }
           }
           authCodes.removeAt(i);
           authCodes.add(jsonDecode(response.body));

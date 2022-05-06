@@ -1,6 +1,9 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../API/ApiFunctions.dart';
 import '../constants.dart';
 
@@ -69,9 +72,6 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                   ),
                   textAlign: TextAlign.right,
                 ),
-                SizedBox(
-                  width: 20,
-                ),
               ],
             ),
             alignment: Alignment.centerRight,
@@ -112,7 +112,8 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                               constantIdentifiers[widget.index]['identifier'],
                               context);
                           await getIdentifierAndTypes();
-                          Navigator.of(context).pushReplacementNamed('/identifiers');
+                          Navigator.of(context)
+                              .pushReplacementNamed('/identifiers');
                         },
                       ),
                     ],
@@ -126,33 +127,418 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                 context);
           }
         },
-        child: Container(
-          //margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          //color: const Color.fromARGB(255, 134, 155, 229),
-          child: ListTile(
-            enabled: true,
-            title: Text(
-              constantIdentifiers[widget.index]['identifier'],
-              style: const TextStyle(fontSize: 18),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: (){
+                var identifier = constantIdentifiers[widget.index]['identifier'];
+                if (programIDs == null) {
+
+                }
+
+                List<String> programNames = [];
+
+                try {
+                  for (int i = 0; i < programIDs.length; i++) {
+                    if (programIDs[i]["identifier"] == identifier) {
+                      for (int j = 0; j < programs.length; j++) {
+                        if (programIDs[i]["program_id"] ==
+                            programs[j]["program_id"]) {
+                          programNames.add(programs[j]["program_name"]);
+                        }
+                      }
+                    }
+                  }
+                } catch (e) {
+                  //
+                }
+                showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    isScrollControlled:true,
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    builder: (builder){
+                      return FractionallySizedBox(
+                        heightFactor: 0.5,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            children:[
+                              Container(
+                                padding: EdgeInsets.fromLTRB(15, 0, 15, 10),
+                                child:Row(
+                                  children:   [
+                                    Text(
+                                      "Programs for ${constantIdentifiers[widget.index]['identifier']}",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: (){
+                                        Navigator.pop(context);
+                                      },
+                                      child:const Icon(Icons.cancel_outlined,size: 25,),
+                                    )
+                                  ],
+                                ) ,
+                              ),
+                              const Divider(thickness: 2,),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemBuilder: (BuildContext context, int index) {
+
+                                  final ValueNotifier<bool> isSwitched = ValueNotifier(false);
+                                  var id;
+
+                                  for (int i = 0;
+                                  i < programs.length;
+                                  i++) {
+                                    if (programs[i]["program_name"] == programNames[index]) {
+                                      id = programs[i]["program_id"];
+                                    }
+                                  }
+
+                                  for (int i = 0;
+                                  i < programStatus.length;
+                                  i++) {
+                                    if (id ==
+                                        programStatus[i]["program_id"]) {
+                                      if (programStatus[i]["status"] ==
+                                          "ACTIVE") {
+                                        isSwitched.value = true;
+                                      } else {
+                                        isSwitched.value = false;
+                                      }
+                                    }
+                                  }
+                                  return Dismissible(
+                                    key: Key(programNames[index]),
+                                    background: Container(
+                                      child: const Align(),
+                                    ),
+                                    secondaryBackground: Container(
+                                      color: Colors.red,
+                                      child: Align(
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: const <Widget>[
+                                            Icon(
+                                              Icons.delete,
+                                              color: Colors.white,
+                                            ),
+                                            Text(
+                                              " Delete",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.centerRight,
+                                      ),
+                                    ),
+                                    onDismissed: (direction) {
+                                      if (direction == DismissDirection.endToStart) {
+                                        setState(() {});
+                                      }
+                                    },
+                                    confirmDismiss: (direction) async {
+                                      if (direction == DismissDirection.endToStart) {
+                                        final bool res = await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                content: Text(
+                                                    "Are you sure you want to delete ${programNames[index]}?"),
+                                                actions: <Widget>[
+                                                  FlatButton(
+                                                    child: const Text(
+                                                      "Cancel",
+                                                      style: TextStyle(color: Colors.black),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                  FlatButton(
+                                                    child: const Text(
+                                                      "Delete",
+                                                      style: TextStyle(color: Colors.red),
+                                                    ),
+                                                    onPressed: () async {
+
+                                                        var PROGID;
+                                                        for (int j = 0;
+                                                        j < programs.length;
+                                                        j++) {
+                                                          if (programNames[index] ==
+                                                              programs[j]
+                                                              ["program_name"]) {
+                                                            PROGID = programs[j]
+                                                            ["program_id"];
+                                                            break;
+                                                          }
+                                                        }
+                                                        await deleteProgram(
+                                                            identifier, PROGID);
+                                                        await getStatusCodes();
+                                                        await getProgramsForIdentifier();
+                                                        Navigator.of(context)
+                                                            .pushReplacementNamed(
+                                                            "/identifiers");
+
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            });
+                                        return res;
+                                      }
+                                    },
+                                    child: ListTile(
+                                      title: Text(programNames[index]),
+                                      trailing: ValueListenableBuilder(
+                                        valueListenable: isSwitched ,
+                                        builder: (context, takenSurvey, child) {
+                                          if(isSwitched.value) {
+                                            return Switch(
+                                              value: true,
+                                              onChanged: (value) async {
+                                                var PROGID;
+                                                for (int j = 0;
+                                                j < programs.length;
+                                                j++) {
+                                                  if (programNames[index] ==
+                                                      programs[j][
+                                                      "program_name"]) {
+                                                    PROGID = programs[j]
+                                                    ["program_id"];
+                                                    break;
+                                                  }
+                                                }
+                                                if (value == true) {
+                                                  for (int i = 0;
+                                                  i <
+                                                      programStatus
+                                                          .length;
+                                                  i++) {
+                                                    if (id ==
+                                                        programStatus[i][
+                                                        "program_id"]) {
+                                                      programStatus[i]
+                                                      ["status"] =
+                                                      "ACTIVE";
+                                                      break;
+                                                    }
+                                                  }
+                                                  isSwitched.value = !isSwitched.value;
+                                                  await updateStatusCode(
+                                                      "ACTIVE",
+                                                      identifier,
+                                                      PROGID);
+                                                  await getStatusCodes();
+                                                } else {
+                                                  for (int i = 0;
+                                                  i <
+                                                      programStatus
+                                                          .length;
+                                                  i++) {
+                                                    if (id ==
+                                                        programStatus[i][
+                                                        "program_id"]) {
+                                                      programStatus[i]
+                                                      ["status"] =
+                                                      "INACTIVE";
+                                                      break;
+                                                    }
+                                                  }
+                                                  isSwitched.value = !isSwitched.value;
+                                                  await updateStatusCode(
+                                                      "INACTIVE",
+                                                      identifier,
+                                                      PROGID);
+                                                  await getStatusCodes();
+                                                }
+                                              },
+                                              activeTrackColor:
+                                              kPrimaryLightColor,
+                                              activeColor: kPrimary,
+                                            );
+                                          }
+                                          return Switch(
+                                            value: false,
+                                            onChanged: (value) async {
+                                              var PROGID;
+                                              for (int j = 0;
+                                              j < programs.length;
+                                              j++) {
+                                                if (programNames[index] ==
+                                                    programs[j][
+                                                    "program_name"]) {
+                                                  PROGID = programs[j]
+                                                  ["program_id"];
+                                                  break;
+                                                }
+                                              }
+                                              if (value == true) {
+                                                for (int i = 0;
+                                                i <
+                                                    programStatus
+                                                        .length;
+                                                i++) {
+                                                  if (id ==
+                                                      programStatus[i][
+                                                      "program_id"]) {
+                                                    programStatus[i]
+                                                    ["status"] =
+                                                    "ACTIVE";
+                                                    break;
+                                                  }
+                                                }
+                                                isSwitched.value = !isSwitched.value;
+                                                await updateStatusCode(
+                                                    "ACTIVE",
+                                                    identifier,
+                                                    PROGID);
+                                                await getStatusCodes();
+                                              } else {
+                                                for (int i = 0;
+                                                i <
+                                                    programStatus
+                                                        .length;
+                                                i++) {
+                                                  if (id ==
+                                                      programStatus[i][
+                                                      "program_id"]) {
+                                                    programStatus[i]
+                                                    ["status"] =
+                                                    "INACTIVE";
+                                                    break;
+                                                  }
+                                                }
+                                                isSwitched.value = !isSwitched.value;
+                                                await updateStatusCode(
+                                                    "INACTIVE",
+                                                    identifier,
+                                                    PROGID);
+                                                await getStatusCodes();
+                                              }
+                                            },
+                                            activeTrackColor:
+                                            kPrimaryLightColor,
+                                            activeColor: kPrimary,
+                                          );
+                                          },
+                                      ),
+                                    ),
+                                  );
+                                },
+                                itemCount: programNames.length,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                );
+              },
+              child: ListTile(
+                enabled: true,
+                title: SizedBox(
+                  child: Text(
+                    constantIdentifiers[widget.index]['identifier'],
+                    maxLines: 2,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                trailing: Text(
+                  constantIdentifiers[widget.index]['identifier_type'],
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
-            trailing: Text(
-              constantIdentifiers[widget.index]['identifier_type'],
-            ),
-          ),
+
+          ],
         ),
       );
     } catch (exception) {
       return Container(
-        //margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-        child: const ListTile(
-          enabled: true,
-          title: Text(
-            "Add an identifier to view it",
-            style: TextStyle(fontSize: 16),
-          ),
+        child: Column(
+          children: const [
+            ListTile(
+              enabled: true,
+              title: SizedBox(
+                //width: size.width * 0.6,
+                child: Text(
+                  "Add an identifier to view it",
+                  maxLines: 2,
+                  style: TextStyle(
+                    //fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ),
+            Divider(
+              thickness: 2,
+            ),
+          ],
         ),
       );
     }
+  }
+
+  updateStatusCode(String status, var identifier, var progID) async {
+    var body = {
+      "user_id": USERID,
+      "status": status,
+      "identifier": identifier,
+      "program_id": progID
+    };
+
+    var response = await http.post(
+      Uri.parse("http://$ipAddress:8081/sky-auth/auth_details/disable"),
+      body: jsonEncode(body),
+    );
+    if (response.statusCode == 200) {
+      await getProgramsForIdentifier();
+      Fluttertoast.showToast(
+          msg: "Updated",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: const Color.fromARGB(255, 75, 181, 67),
+          textColor: Colors.white,
+          fontSize: 14.0);
+      return;
+    }
+
+    var snackBar = const SnackBar(
+      content: Text(
+        'Something went wrong. Try again later',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      backgroundColor: Color.fromARGB(255, 255, 204, 204),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    return;
   }
 
   Future confirmIdentifierDialogPopUp(

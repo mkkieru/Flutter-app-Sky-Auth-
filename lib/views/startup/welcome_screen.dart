@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sky_auth/components/background.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +23,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    final ThemeData mode = Theme.of(context);
+    var whichMode = mode.brightness;
+    Color COLOR = kPrimary;
+    if (whichMode == Brightness.dark) {
+      print(whichMode);
+      COLOR = kPrimaryLightColor;
+    }
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -33,87 +40,77 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 alignment: Alignment.center,
-                child: const Text(
+                child:  Text(
                   "SKY AUTH",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Color(0xFF0D47A1),
+                    fontSize: 25,
+                    color: COLOR,
                   ),
                 ),
               ),
               const SizedBox(
                 height: 20,
               ),
-              SvgPicture.asset(
-                "assets/icons/lock.svg",
+              Image.asset(
+                'assets/images/Sky-Wolrd-Logo-1-removebg-preview.png',
+                width: size.width * 0.9,
                 height: size.height * 0.55,
               ),
               const SizedBox(
                 height: 10,
               ),
-              Container(
-                  alignment: Alignment.centerRight,
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                  child: RaisedButton(
-                    onPressed: () async {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(80),
-                    ),
-                    textColor: Colors.white,
-                    padding: const EdgeInsets.all(0),
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 50,
-                      //width: size.width * 0.5,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0D47A1),
-                        borderRadius: BorderRadius.circular(80),
-                      ),
-                      padding: const EdgeInsets.all(0),
-                      child: const Text(
-                        "LOGIN",
-                        textAlign: TextAlign.center,
+              GestureDetector(
+                onTap: () async {
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: Container(
+                  height: 50,
+                  width: size.width * 0.9,
+                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  decoration: const BoxDecoration(
+                    color: kPrimary,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // ignore: prefer_const_literals_to_create_immutables
+                    children: [
+                      const Text(
+                        "Log In",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                  )),
-              Container(
-                alignment: Alignment.centerRight,
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                child: RaisedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/signup');
-                  },
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(80),
+                    ],
                   ),
-                  textColor: Colors.white,
-                  padding: const EdgeInsets.all(0),
-                  child: Container(
-                    alignment: Alignment.center,
-                    height: 50,
-                    //width: size.width * 0.5,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(80),
-                    ),
-                    padding: const EdgeInsets.all(0),
-                    child: const Text(
-                      "SIGNUP",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/signup');
+                },
+                child: Container(
+                  height: 50,
+                  width: size.width * 0.9,
+                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  decoration: const BoxDecoration(
+                    color: kPrimaryLightColor,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // ignore: prefer_const_literals_to_create_immutables
+                    children: [
+                      const Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -162,7 +159,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       ACCESSTOKEN = access_token;
       USERID = userId;
       await getIdentifierAndTypes();
-      await getPrograms(context);
+      await getPrograms();
       await getStatusCodes();
       if(mounted){
         Navigator.of(context).pushReplacementNamed("/homePage");

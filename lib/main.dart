@@ -9,6 +9,7 @@ import 'package:sky_auth/views/login/login.dart';
 import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
 
+import 'components/homePageStatusCodesList.dart';
 import 'views/signup/signup.dart';
 
 void main() {
@@ -41,16 +42,20 @@ class MyApp extends StatelessWidget {
     precacheImage(const AssetImage("assets/images/top1.png"), context);
     precacheImage(const AssetImage("assets/images/top2.png"), context);
     precacheImage(const AssetImage("assets/images/user.png"), context);
+    precacheImage(const AssetImage("assets/images/SkyWorldLogo.png"), context);
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mark Kieru',
       theme: ThemeData(
+        //canvasColor: Colors.transparent,
         primaryColor: kPrimary,
         fontFamily: 'Roboto',
         brightness: Brightness.light,
+        //brightness: Brightness.dark,
       ),
       darkTheme: ThemeData(
+        canvasColor: Colors.transparent,
         primaryColor: kPrimary,
         fontFamily: 'Roboto',
         brightness: Brightness.dark,

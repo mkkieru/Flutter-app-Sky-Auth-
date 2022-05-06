@@ -44,7 +44,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.4
   circular_countdown_timer: ^0.2.1
-  local_auth:
   fluttertoast: ^8.0.9
   flutter_fragments:
   countdown_progress_indicator: ^0.1.2
@@ -54,6 +53,11 @@ dependencies:
   percent_indicator: ^4.0.0
   get:
   dropdown_button2: ^1.4.0
+  connectivity: ^0.4.3+2
+  connectivity_plus: ^2.0.2
+  internet_connection_checker: ^0.0.1+3
+  local_auth: ^2.0.0
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

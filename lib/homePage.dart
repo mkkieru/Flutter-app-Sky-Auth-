@@ -1,5 +1,6 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
@@ -10,10 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'dart:convert';
-
+import 'package:shimmer/shimmer.dart';
+import 'package:connectivity/connectivity.dart';
 import 'API/ApiFunctions.dart';
 import 'components/drawerWidget.dart';
 import 'components/homePageStatusCodesList.dart';
+
 import 'constants.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,8 +29,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  final ValueNotifier<bool> _online = ValueNotifier(false);
   var selectedIndex = 0;
   var barcode;
+
   var items = [
     const Text(
       'Logout',
@@ -37,11 +42,22 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ),
     )
   ];
-  var title ;
+  var title;
+  late String _defaultValue;
+
 
   @override
   void initState() {
     super.initState();
+    try {
+      if (individualIdentifier != "") {
+        _defaultValue = individualIdentifier;
+      } else {
+        _defaultValue = constantIdentifiers[0]["identifier"];
+      }
+    } catch (e) {
+      _defaultValue = "No identifiers";
+    }
     getProgramsForIdentifier();
     WidgetsBinding.instance?.addObserver(this);
   }
@@ -50,6 +66,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
+  }
+
+  Future<void> _checkConnectivityState() async {
+    final ConnectivityResult result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.wifi ||
+        result == ConnectivityResult.mobile) {
+      await getStatusCodes();
+      _online.value = true;
+    } else {
+      //await getStatusCodes();
+      _online.value = false;
+    }
   }
 
   @override
@@ -74,132 +102,496 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+
+    final ThemeData mode = Theme.of(context);
+    var whichMode = mode.brightness;
+    Color COLOR = Colors.white;
+    Color COLOR2 = Colors.black;
+    if (whichMode == Brightness.dark) {
+      COLOR = Colors.black;
+      COLOR2 = Colors.white;
+    }
+
+
     if (individualIdentifier == "") {
-      title =  const Text(
-        "Sky Auth",
+      title = const Text(
+        "SKY AUTH",
         style: TextStyle(
           fontSize: 16,
         ),
       );
-    }else {
-      title = Text(
-        individualIdentifier,
-        style: const TextStyle(
-          fontSize: 16,
-        ),
-      );
-    }
-    var size = MediaQuery.of(context).size;
-    return SafeArea(
-      child: Scaffold(
-        drawer: const DrawerWidget(),
-        appBar: AppBar(
-          toolbarHeight: size.height * 0.1,
-          backgroundColor: kPrimary,
-          elevation: 10,
-          title: SizedBox(
-            width: size.width * 0.6,
-            child: title,
+    } else {
+      try {
+        title = DropdownButtonHideUnderline(
+          child: DropdownButton2(
+            isExpanded: true,
+            value: _defaultValue,
+            style: const TextStyle(
+              fontSize: 16,
+            ),
+            icon: const Icon(
+              Icons.arrow_drop_down,
+            ),
+            iconOnClick: const Icon(
+              Icons.arrow_drop_up,
+            ),
+            dropdownDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.grey,
+            ),
+            onChanged: (newValue) async {
+              if (newValue.toString() == "No identifiers") {
+                _defaultValue = newValue.toString();
+                return;
+              }
+              _defaultValue = newValue.toString();
+              individualIdentifier = newValue.toString();
+
+              await getStatusCodes();
+              Navigator.of(context).pushReplacementNamed('/homePage');
+            },
+            items: constantIdentifiers.map((identifiers) {
+              try {
+                return DropdownMenuItem(
+                  child: Text(
+                    identifiers['identifier'],
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      //fontSize: 16,
+                    ),
+                  ),
+                  value: identifiers['identifier'],
+                );
+              } catch (e) {
+                return const DropdownMenuItem(
+                  child: Text(
+                    "No identifiers",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  value: "No identifiers",
+                );
+              }
+            }).toList(),
           ),
-          actions: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: FocusedMenuHolder(
-                blurBackgroundColor: Colors.blueGrey[900],
-                openWithTap: true,
-                onPressed: () {},
-                animateMenuItems: true,
-                menuItems: items
-                    .map((e) => FocusedMenuItem(
-                    title: e ,
-                    onPressed: () async {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          content: const Text("Are you sure you want to logout?"),
-                          actions: <Widget>[
-                            FlatButton(
-                              child: const Text(
-                                "No",
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                            FlatButton(
-                              child: const Text(
-                                "Yes",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              onPressed: () async {
-                                final SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
+        );
+      }catch(e){
+        title = Text(
+          individualIdentifier,
+          style: const TextStyle(
+            fontSize: 16,
+          ),
+        );
+      }
+    }
 
-                                prefs.setString('user_id', "");
-                                prefs.setString('ip_address', "");
-                                prefs.setString('access_token', "");
-                                prefs.setString('username', "");
+    _checkConnectivityState();
+    return GestureDetector(
+      child: ValueListenableBuilder(
+        valueListenable: _online,
+        builder: (context, takenSurvey, child) {
+          if (_online.value == true) {
+            return SafeArea(
+              child: Scaffold(
+                drawer: const DrawerWidget(),
+                appBar: AppBar(
+                  toolbarHeight: size.height * 0.1,
+                  backgroundColor: kPrimary,
+                  elevation: 10,
+                  title: SizedBox(
+                    child: title,
+                  ),
+                  actions: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(0,0,20,0),
+                      child: FocusedMenuHolder(
+                        blurBackgroundColor: Colors.blueGrey[900],
+                        openWithTap: true,
+                        onPressed: () {},
+                        animateMenuItems: true,
+                        menuItems: items
+                            .map((e) => FocusedMenuItem(
+                                title: e,
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      content: const Text(
+                                          "Are you sure you want to logout?"),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: const Text(
+                                            "No",
+                                            style: TextStyle(color: Colors.black),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: const Text(
+                                            "Yes",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                          onPressed: () async {
+                                            final SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
 
-                                Navigator.pop(context);
-                                Navigator.pushReplacementNamed(context, '/login');
-                              },
-                            ),
-                          ],
+                                            prefs.setString('user_id', "");
+                                            prefs.setString('ip_address', "");
+                                            prefs.setString('access_token', "");
+                                            prefs.setString('username', "");
+
+                                            Navigator.pop(context);
+                                            Navigator.pushReplacementNamed(
+                                                context, '/login');
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }))
+                            .toList(),
+                        child: CircleAvatar(
+                          radius: size.height * 0.035,
+                          backgroundColor: Colors.brown.shade800,
+                          child: Text(INITIALS),
                         ),
-                      );
-                    }))
-                    .toList(),
-                child: CircleAvatar(
-                  radius: size.height * 0.035,
-                  backgroundColor: Colors.brown.shade800,
-                  child: Text(INITIALS),
+                      ),
+                    ),
+                  ],
+                ),
+                body: StreamBuilder(
+                    stream: Connectivity().onConnectivityChanged,
+                    builder: (BuildContext ctxt,
+                        AsyncSnapshot<ConnectivityResult> snapShot) {
+
+                      var result = snapShot.data;
+                      switch (result) {
+                        case ConnectivityResult.none:
+                          return Shimmer.fromColors(
+                            baseColor: kPrimaryLightColor,
+                            highlightColor: Colors.grey,
+                            enabled: true,
+                            child: ListView.builder(
+                              itemBuilder: (_, __) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 8.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 48.0,
+                                      height: 48.0,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(24),
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 8.0),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Container(
+                                            width: size.width * 0.7,
+                                            height: 8.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                          ),
+                                          Container(
+                                            width: size.width * 0.5,
+                                            height: 8.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                          ),
+                                          Container(
+                                            width: 40.0,
+                                            height: 8.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              itemCount: 10,
+                            ),
+                          );
+                        case ConnectivityResult.mobile:
+                        case ConnectivityResult.wifi:
+                          return Stack(
+                            children: [
+                              RefreshIndicator(
+                                child: const HomepageStatusCodesList(),
+                                onRefresh: () async {
+                                  await getStatusCodes();
+                                  await Future.delayed(
+                                      const Duration(seconds: 2));
+                                },
+                              ),
+                              //const HomepageStatusCodesList(),
+                            ],
+                          );
+                        default:
+                          print("Loaded this ... ");
+                          return RefreshIndicator(
+                            child: const HomepageStatusCodesList(),
+                            onRefresh: () async {
+                              await getStatusCodes();
+                              await Future.delayed(const Duration(seconds: 2));
+                            },
+                          );
+                      }
+                    }),
+                floatingActionButton: ExpandableFab(
+                  distance: 90.0,
+                  children: [
+                    Row(
+                      children: [
+                        const Text("Scan QR Code"),
+                        SizedBox(
+                          width: size.width * 0.03,
+                        ),
+                        ActionButton(
+                          onPressed: scan,
+                          icon: Icon(
+                            Icons.qr_code,
+                            color: COLOR,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text("Add Identifier"),
+                        SizedBox(
+                          width: size.width * 0.03,
+                        ),
+                        ActionButton(
+                          onPressed: () {
+                            show = true;
+                            Navigator.pushReplacementNamed(
+                                context, '/identifiers');
+                          },
+                          icon: Icon(
+                            Icons.add,
+                            color: COLOR,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: const [
-            HomepageStatusCodesList(),
-          ],
-        ),
-        floatingActionButton: ExpandableFab(
-          distance: 90.0,
-          children: [
-            Row(
-              children: [
-                const Text("Scan QR Code"),
-                SizedBox(
-                  width: size.width * 0.03,
+            );
+          } else {
+            return SafeArea(
+              child: Scaffold(
+                drawer: const DrawerWidget(),
+                appBar: AppBar(
+                  toolbarHeight: size.height * 0.1,
+                  backgroundColor: kPrimary,
+                  elevation: 10,
+                  title: SizedBox(
+                    width: size.width * 0.6,
+                    child: title,
+                  ),
+                  actions: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: FocusedMenuHolder(
+                        blurBackgroundColor: Colors.blueGrey[900],
+                        openWithTap: true,
+                        onPressed: () {},
+                        animateMenuItems: true,
+                        menuItems: items
+                            .map((e) => FocusedMenuItem(
+                                title: e,
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      content: const Text(
+                                          "Are you sure you want to logout?"),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: const Text(
+                                            "No",
+                                            style: TextStyle(color: Colors.black),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: const Text(
+                                            "Yes",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                          onPressed: () async {
+                                            final SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+
+                                            prefs.setString('user_id', "");
+                                            prefs.setString('ip_address', "");
+                                            prefs.setString('access_token', "");
+                                            prefs.setString('username', "");
+
+                                            Navigator.pop(context);
+                                            Navigator.pushReplacementNamed(
+                                                context, '/login');
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }))
+                            .toList(),
+                        child: CircleAvatar(
+                          radius: size.height * 0.035,
+                          backgroundColor: Colors.brown.shade800,
+                          child: Text(INITIALS),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                ActionButton(
-                  onPressed: scan,
-                  icon: const Icon(
-                    Icons.qr_code,
-                    color: Colors.white,
+                body: Shimmer.fromColors(
+                  baseColor: kPrimaryLightColor,
+                  highlightColor: Colors.grey,
+                  enabled: true,
+                  child: ListView.builder(
+                    itemBuilder: (_, __) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            width: 48.0,
+                            height: 48.0,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              color: Colors.white,
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  width: size.width * 0.7,
+                                  height: 8.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                                ),
+                                Container(
+                                  width: size.width * 0.5,
+                                  height: 8.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                                ),
+                                Container(
+                                  width: 40.0,
+                                  height: 8.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    itemCount: 10,
                   ),
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                const Text("Add Identifier"),
-                SizedBox(
-                  width: size.width * 0.03,
+                floatingActionButton: ExpandableFab(
+                  distance: 90.0,
+                  children: [
+                    Row(
+                      children: [
+                        const Text("Scan QR Code"),
+                        SizedBox(
+                          width: size.width * 0.03,
+                        ),
+                        ActionButton(
+                          onPressed: scan,
+                          icon: Icon(
+                            Icons.qr_code,
+                            color: COLOR,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text("Identifiers"),
+                        SizedBox(
+                          width: size.width * 0.03,
+                        ),
+                        ActionButton(
+                          onPressed: () => Navigator.of(context)
+                              .pushReplacementNamed("/identifiers"),
+                          icon: Icon(
+                            Icons.add,
+                            color: COLOR,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                ActionButton(
-                  onPressed: () => Navigator.of(context)
-                      .pushReplacementNamed("/identifiers"),
-                  icon: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -233,13 +625,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         }
         if (exists) {
           await confirmIdentifier(ident, identType, token);
-          individualIdentifier = ident;
           Get.off(HomePage());
           return;
         } else {
           await addIdentifierToDB(ident, identType);
           await confirmIdentifier(ident, identType, token);
-          individualIdentifier = ident;
           Get.off(HomePage());
           return;
         }
@@ -340,11 +730,11 @@ class _ExpandableFabState extends State<ExpandableFab>
           elevation: 4.0,
           child: InkWell(
             onTap: _toggle,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Icon(
                 Icons.close,
-                color: Theme.of(context).primaryColor,
+                color: kPrimaryLightColor,
               ),
             ),
           ),

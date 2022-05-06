@@ -57,7 +57,7 @@ class Background extends StatelessWidget {
           //     width: size.width * 0.3,
           //   ),
           // ),
-          child,
+          SingleChildScrollView(child: child),
           //child,
         ],
       ),

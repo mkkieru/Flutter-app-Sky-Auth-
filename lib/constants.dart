@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 //const ipAddress = "10.0.2.2";
 const ipAddress = "85.159.214.103";
 
-const kPrimary = Color(0xFF5175F1);
-const kPrimaryLightColor = Color(0xFFD5CEE3);
+const kPrimary = Color.fromARGB(255,21,57,128);
+const kPrimaryLightColor = Color.fromARGB(255,0,167,225);
 const kPrimaryLightColorHomePageBackground = Color(0xFFDFDFEA);
 // ignore: prefer_typing_uninitialized_variables
 
-var defaultValue = constantIdentifierTypes[0]["identifier_type"];
+var defaultValue;
+var show = false;
 
 
 var ACCESSTOKEN;
