@@ -332,21 +332,12 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget>{
       var cameraScanResult = await scanner.scan();
       Map qrData = jsonDecode(cameraScanResult!);
 
-      print("............................ TRYING ..........................");
-
-
       for (int i = 0; i < programs.length; i++) {
 
         if (programs[i]["program_id"] == qrData["program_id"]) {
           if(programs[i]["program_name"] == widget.programName && qrData["identifier"] == individualIdentifier) {
 
-            print(programs[i]["program_name"]);
-            print(qrData["program_id"]);
-            print(individualIdentifier);
-            print("............................ NEXT ..........................");
-
             qrData.remove("auth_code");
-            print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm  ${qrData}  mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
 
             var response = await http.post(
               Uri.parse(

@@ -53,8 +53,6 @@ confirmIdentifier(identifier, identifierType, text) async {
       await getStatusCodes();
       return;
     }
-    print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm ${response.body} mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
-
     Fluttertoast.showToast(
         msg: "Invalid token",
         toastLength: Toast.LENGTH_SHORT,
@@ -221,7 +219,7 @@ authenticate(var programName) async {
           fontSize: 14.0);
     } else {
       Fluttertoast.showToast(
-          msg: "Please use provided code",
+          msg: "No Pending Authentication",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -312,7 +310,7 @@ addIdentifierToDB(String identifier, String identifierType) async {
   }
 }
 
-void LoginToApp(var name, var pass, var context) async {
+Future<String> LoginToApp(var name, var pass, var context) async {
   bool isOnline = await hasNetwork();
   if (isOnline) {
     String password = pass;
@@ -359,8 +357,6 @@ void LoginToApp(var name, var pass, var context) async {
       await getPrograms();
       await getStatusCodes();
 
-      Navigator.pushReplacementNamed(context, '/homePage');
-
       Fluttertoast.showToast(
           msg: "Login successful",
           toastLength: Toast.LENGTH_SHORT,
@@ -369,7 +365,11 @@ void LoginToApp(var name, var pass, var context) async {
           backgroundColor: const Color.fromARGB(255, 75, 181, 67),
           textColor: Colors.white,
           fontSize: 14.0);
+
+      return "OK";
     } else {
+
+      //context.loaderOverlay.hide();
       Fluttertoast.showToast(
           msg: "INVALID CREDENTIALS",
           toastLength: Toast.LENGTH_SHORT,
@@ -378,6 +378,8 @@ void LoginToApp(var name, var pass, var context) async {
           backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 14.0);
+
+      return "INVALID";
     }
   } else {
     Fluttertoast.showToast(
@@ -388,6 +390,7 @@ void LoginToApp(var name, var pass, var context) async {
         backgroundColor: Colors.red,
         textColor: Colors.white,
         fontSize: 14.0);
+    return "INVALID";
   }
 }
 
@@ -404,7 +407,7 @@ Future<int> getIdentifierAndTypes() async {
         Uri.parse('http://$ipAddress:8081/sky-auth/identifier_type'),
         headers: {"access_token": ACCESSTOKEN});
     try {
-      if (responseIdentifiers.statusCode == 200 ||
+      if (responseIdentifiers.statusCode == 200 &&
           responseIdentifierTypes.statusCode == 200) {
         var identifiersFromDB = jsonDecode(responseIdentifiers.body);
         var identifierTypesFromDB = jsonDecode(responseIdentifierTypes.body);
@@ -428,6 +431,7 @@ Future<int> getIdentifierAndTypes() async {
         } catch (e) {}
       }
     } catch (e) {
+      print(e);
       Fluttertoast.showToast(
           msg: "Something went wrong. Try again later",
           toastLength: Toast.LENGTH_SHORT,
@@ -520,7 +524,7 @@ Future<int> getStatusCodes() async {
   return 1;
 }
 
-signUp(String fName, String lName, String uName, String natID, String pass,
+Future<String> signUp(String fName, String lName, String uName, String natID, String pass,
     context) async {
   bool isOnline = await hasNetwork();
   if (isOnline) {
@@ -538,7 +542,7 @@ signUp(String fName, String lName, String uName, String natID, String pass,
             backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 14.0);
-        return;
+        return '';
       }
 
       Map<String, dynamic> userSignupDetails = {
@@ -564,29 +568,29 @@ signUp(String fName, String lName, String uName, String natID, String pass,
             backgroundColor: const Color.fromARGB(255, 75, 181, 67),
             textColor: Colors.white,
             fontSize: 14.0);
-        LoginToApp(uName, pass, context);
+        return LoginToApp(uName, pass, context);
       } else {
-        context.loaderOverlay.hide();
         Fluttertoast.showToast(
             msg: responseBody.values.first,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
-            backgroundColor: const Color.fromARGB(255, 255, 148, 148),
+            backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 14.0);
-        return;
+        return '';
       }
     } catch (exception) {
-      context.loaderOverlay.hide();
+      print(exception);
       Fluttertoast.showToast(
           msg: "Something went wrong",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
-          backgroundColor: const Color.fromARGB(255, 255, 148, 148),
+          backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 14.0);
+      return '';
     }
   } else {
     Fluttertoast.showToast(
@@ -597,6 +601,7 @@ signUp(String fName, String lName, String uName, String natID, String pass,
         backgroundColor: Colors.red,
         textColor: Colors.white,
         fontSize: 14.0);
+    return '';
   }
 }
 

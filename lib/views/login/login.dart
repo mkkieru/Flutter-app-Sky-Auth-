@@ -80,7 +80,7 @@ class _LoginState extends State<Login> {
                         valueListenable: _visibility,
                         builder: (context, takenSurvey, child) {
                           if (_visibility.value == false) {
-                            return  Container(
+                            return Container(
                               alignment: Alignment.center,
                               height: 50,
                               margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -88,7 +88,7 @@ class _LoginState extends State<Login> {
                               child: TextField(
                                 controller: _password,
                                 obscureText: true,
-                                decoration:  InputDecoration(
+                                decoration: InputDecoration(
                                   border: const OutlineInputBorder(),
                                   labelText: "Password",
                                   labelStyle: const TextStyle(fontSize: 16),
@@ -103,7 +103,7 @@ class _LoginState extends State<Login> {
                               ),
                             );
                           } else {
-                            return  Container(
+                            return Container(
                               alignment: Alignment.center,
                               height: 50,
                               margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
@@ -111,7 +111,7 @@ class _LoginState extends State<Login> {
                               child: TextField(
                                 controller: _password,
                                 obscureText: false,
-                                decoration:  InputDecoration(
+                                decoration: InputDecoration(
                                   border: const OutlineInputBorder(),
                                   labelText: "Password",
                                   labelStyle: const TextStyle(fontSize: 16),
@@ -119,7 +119,8 @@ class _LoginState extends State<Login> {
                                     onPressed: () {
                                       _visibility.value = false;
                                     },
-                                    icon: const Icon(Icons.visibility_off_rounded ),
+                                    icon: const Icon(
+                                        Icons.visibility_off_rounded),
                                   ),
                                   //border: InputBorder.none,
                                 ),
@@ -131,22 +132,29 @@ class _LoginState extends State<Login> {
                       const SizedBox(
                         height: 5,
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          var username = _username.text;
-                          var password = _password.text;
-                          context.loaderOverlay.show();
-                          LoginToApp(username, password, context);
-                          context.loaderOverlay.hide();
-                        },
-                        child: Container(
-                          height: 50,
-                          width: size.width * 0.9,
-                          margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                          decoration: const BoxDecoration(
-                            color: kPrimary,
-                          ),
+                      Container(
+                        height: 50,
+                        width: size.width * 0.9,
+                        margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: kPrimary,
+                        ),
+                        child: FlatButton(
+                          onPressed: () async {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            context.loaderOverlay.show();
+                            var username = _username.text;
+                            var password = _password.text;
+                            context.loaderOverlay.show();
+                            var result = await LoginToApp(username, password, context);
+                            context.loaderOverlay.hide();
+
+                            if(result == "OK") {
+                              Navigator.pushReplacementNamed(
+                                  context, '/homePage');
+                            }
+                          },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             // ignore: prefer_const_literals_to_create_immutables
@@ -180,13 +188,13 @@ class _LoginState extends State<Login> {
                                 "Don't have an account?  ",
                               ),
                               Text(
-                              "Sign Up",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: kPrimaryLightColor,
-                                //fontSize: 14,
+                                "Sign Up",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: kPrimaryLightColor,
+                                  //fontSize: 14,
+                                ),
                               ),
-                            ),
                             ],
                           ),
                         ),

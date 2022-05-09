@@ -165,24 +165,30 @@ class _SignupState extends State<Signup> {
                     }
                   },
                 ),
-                GestureDetector(
-                  onTap: () async {
-                    String fName = _firstname.text;
-                    String lName = _lastname.text;
-                    String uName = _username.text;
-                    var natID = _nationalID.text;
-                    String pass = _password.text;
-                    context.loaderOverlay.show();
-                    await signUp(fName, lName, uName, natID, pass, context);
-                    context.loaderOverlay.hide();
-                  },
-                  child: Container(
-                    height: 50,
-                    width: size.width * 0.9,
-                    margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                    decoration: const BoxDecoration(
-                      color: kPrimary,
-                    ),
+                Container(
+                  height: 50,
+                  width: size.width * 0.9,
+                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: kPrimary,
+                  ),
+                  child: FlatButton(
+                    onPressed: () async {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      String fName = _firstname.text;
+                      String lName = _lastname.text;
+                      String uName = _username.text;
+                      var natID = _nationalID.text;
+                      String pass = _password.text;
+                      context.loaderOverlay.show();
+                      var result = await signUp(fName, lName, uName, natID, pass, context);
+                      context.loaderOverlay.hide();
+                      if(result == "OK"){
+                        Navigator.pushReplacementNamed(
+                            context, '/homePage');
+                      }
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       // ignore: prefer_const_literals_to_create_immutables
@@ -192,6 +198,7 @@ class _SignupState extends State<Signup> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color:Colors.white,
                           ),
                         ),
                       ],

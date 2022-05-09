@@ -17,7 +17,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../../API/ApiFunctions.dart';
-import '../../components/BottomNav.dart';
 import '../../homePage.dart';
 import '../login/login.dart';
 
@@ -268,7 +267,7 @@ class _IdentifiersState extends State<Identifiers> {
                                 FlatButton(
                                   child: const Text(
                                     "No",
-                                    style: TextStyle(color: Colors.black),
+                                    //style: TextStyle(color: Colors.black),
                                   ),
                                   onPressed: () {
                                     Navigator.of(context).pop();
@@ -331,7 +330,6 @@ class _IdentifiersState extends State<Identifiers> {
         ),
         floatingActionButton: ActionButton(
           onPressed: () {
-            //_modalBottomSheetMenu();
             showModalBottomSheet(
                 context: context,
                 shape: const RoundedRectangleBorder(
@@ -438,44 +436,45 @@ class _IdentifiersState extends State<Identifiers> {
                                   ),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () async {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-                                  String Identifier = VALUE;
+                              Container(
+                                height: 50,
+                                width: double.infinity,
+                                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: kPrimaryLightColor,
+                                ),
+                                child: FlatButton(
+                                  onPressed: () async {
+                                    FocusManager.instance.primaryFocus?.unfocus();
+                                    String Identifier = VALUE;
 
-                                  if(defaultValue == null){
-                                    Fluttertoast.showToast(
-                                        msg: "Select Identifier Type",
-                                        toastLength: Toast.LENGTH_SHORT,
-                                        gravity: ToastGravity.BOTTOM,
-                                        timeInSecForIosWeb: 1,
-                                        backgroundColor: Colors.red,
-                                        textColor: Colors.white,
-                                        fontSize: 14.0);
-                                    return;
-                                  }else if(Identifier == null || Identifier == ""){
-                                    Fluttertoast.showToast(
-                                        msg: "Identifier Can't Be Empty ",
-                                        toastLength: Toast.LENGTH_SHORT,
-                                        gravity: ToastGravity.BOTTOM,
-                                        timeInSecForIosWeb: 1,
-                                        backgroundColor: Colors.red,
-                                        textColor: Colors.white,
-                                        fontSize: 14.0);
-                                    return;
-                                  }
-                                  String identifierType = defaultValue;
-                                  await addIdentifierToDB(Identifier, identifierType);
-                                  Navigator.of(context).pushReplacementNamed("/identifiers");
-                                  setState(() {});
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: double.infinity,
-                                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                  decoration: const BoxDecoration(
-                                    color: kPrimaryLightColor,
-                                  ),
+                                    if(defaultValue == null){
+                                      Fluttertoast.showToast(
+                                          msg: "Select Identifier Type",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.red,
+                                          textColor: Colors.white,
+                                          fontSize: 14.0);
+                                      return;
+                                    }else if(Identifier == null || Identifier == ""){
+                                      Fluttertoast.showToast(
+                                          msg: "Identifier Can't Be Empty ",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.red,
+                                          textColor: Colors.white,
+                                          fontSize: 14.0);
+                                      return;
+                                    }
+                                    String identifierType = defaultValue;
+                                    await addIdentifierToDB(Identifier, identifierType);
+                                    Navigator.of(context).pushReplacementNamed("/identifiers");
+                                    setState(() {});
+                                  },
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     // ignore: prefer_const_literals_to_create_immutables
@@ -578,10 +577,6 @@ class CustomDropDown extends StatefulWidget {
 class _CustomDropDownState extends State<CustomDropDown> {
   @override
   Widget build(BuildContext context) {
-    if(show){
-      print("Now show that thing ... ");
-    }
-    print("Now show that thing ... ");
     return Column(
       children: [
         Container(

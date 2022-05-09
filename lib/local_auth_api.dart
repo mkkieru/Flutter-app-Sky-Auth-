@@ -6,7 +6,6 @@ class LocalAuthApi {
 
   static Future<bool> hasBiometrics() async {
     try {
-      print("Trying ...");
       return await _auth.canCheckBiometrics;
     } on PlatformException catch (e) {
       return false;

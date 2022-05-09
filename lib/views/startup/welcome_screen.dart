@@ -27,7 +27,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var whichMode = mode.brightness;
     Color COLOR = kPrimary;
     if (whichMode == Brightness.dark) {
-      print(whichMode);
       COLOR = kPrimaryLightColor;
     }
 
@@ -60,17 +59,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               const SizedBox(
                 height: 10,
               ),
-              GestureDetector(
-                onTap: () async {
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
-                child: Container(
-                  height: 50,
-                  width: size.width * 0.9,
-                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                  decoration: const BoxDecoration(
-                    color: kPrimary,
-                  ),
+              Container(
+                height: 50,
+                width: size.width * 0.9,
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: kPrimary,
+                ),
+                child: FlatButton(
+                  onPressed: () async {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     // ignore: prefer_const_literals_to_create_immutables
@@ -87,17 +87,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, '/signup');
-                },
-                child: Container(
-                  height: 50,
-                  width: size.width * 0.9,
-                  margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                  decoration: const BoxDecoration(
-                    color: kPrimaryLightColor,
-                  ),
+              Container(
+                height: 50,
+                width: size.width * 0.9,
+                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: kPrimaryLightColor,
+                ),
+                child: FlatButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/signup');
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     // ignore: prefer_const_literals_to_create_immutables

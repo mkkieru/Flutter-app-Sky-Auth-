@@ -48,14 +48,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Mark Kieru',
       theme: ThemeData(
-        //canvasColor: Colors.transparent,
         primaryColor: kPrimary,
         fontFamily: 'Roboto',
-        brightness: Brightness.light,
         //brightness: Brightness.dark,
+        brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
-        canvasColor: Colors.transparent,
         primaryColor: kPrimary,
         fontFamily: 'Roboto',
         brightness: Brightness.dark,

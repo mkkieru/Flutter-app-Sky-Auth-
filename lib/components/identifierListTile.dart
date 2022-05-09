@@ -94,7 +94,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                       FlatButton(
                         child: const Text(
                           "Cancel",
-                          style: TextStyle(color: Colors.black),
+                          //style: TextStyle(color: Colors.black),
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
@@ -257,12 +257,11 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                                             builder: (BuildContext context) {
                                               return AlertDialog(
                                                 content: Text(
-                                                    "Are you sure you want to delete ${programNames[index]}?"),
+                                                    "Are you sure you want to remove ${programNames[index]}?"),
                                                 actions: <Widget>[
                                                   FlatButton(
                                                     child: const Text(
                                                       "Cancel",
-                                                      style: TextStyle(color: Colors.black),
                                                     ),
                                                     onPressed: () {
                                                       Navigator.of(context).pop();
@@ -491,9 +490,6 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                   ),
                 ),
               ),
-            ),
-            Divider(
-              thickness: 2,
             ),
           ],
         ),

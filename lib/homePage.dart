@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
             dropdownDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              color: Colors.grey,
+              color: Colors.blueGrey,
             ),
             onChanged: (newValue) async {
               if (newValue.toString() == "No identifiers") {
@@ -154,15 +154,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             items: constantIdentifiers.map((identifiers) {
               try {
                 return DropdownMenuItem(
-                  child: Text(
-                    identifiers['identifier'],
-                    overflow: TextOverflow.fade,
-                    maxLines: 1,
-                    softWrap: false,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      //fontSize: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        identifiers['identifier_type'],
+                        overflow: TextOverflow.fade,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        ),
+                      ),
+                      Text(
+                      identifiers['identifier'],
+                      overflow: TextOverflow.fade,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        //fontSize: 16,
+                      ),
                     ),
+                    ],
                   ),
                   value: identifiers['identifier'],
                 );
@@ -227,7 +243,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                         FlatButton(
                                           child: const Text(
                                             "No",
-                                            style: TextStyle(color: Colors.black),
+                                            //style: TextStyle(color: Colors.black),
                                           ),
                                           onPressed: () {
                                             Navigator.of(context).pop();
@@ -363,7 +379,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             ],
                           );
                         default:
-                          print("Loaded this ... ");
                           return RefreshIndicator(
                             child: const HomepageStatusCodesList(),
                             onRefresh: () async {
@@ -447,7 +462,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                         FlatButton(
                                           child: const Text(
                                             "No",
-                                            style: TextStyle(color: Colors.black),
+                                            //style: TextStyle(color: Colors.black),
                                           ),
                                           onPressed: () {
                                             Navigator.of(context).pop();

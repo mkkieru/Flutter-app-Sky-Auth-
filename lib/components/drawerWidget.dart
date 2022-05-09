@@ -114,7 +114,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                           ),
                           dropdownDecoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: Colors.grey,
+                            color: Colors.blueGrey,
                           ),
                           onChanged: (newValue) async {
                             if (newValue.toString() == "No identifiers") {
@@ -202,7 +202,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                         FlatButton(
                           child: const Text(
                             "No",
-                            style: TextStyle(color: Colors.black),
+                            //style: TextStyle(color: Colors.black),
                           ),
                           onPressed: () {
                             Navigator.of(context).pop();
