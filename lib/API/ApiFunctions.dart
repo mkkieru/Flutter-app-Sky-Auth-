@@ -11,12 +11,94 @@ import 'package:sky_auth/constants.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:collection';
 
+activateCodes() async {
+
+    var body = {
+      "user_id": USERID,
+    };
+
+    var response = await http.post(
+      Uri.parse(
+          "http://$ipAddress:8081/sky-auth/status/activate"),
+      body: jsonEncode(body),
+      headers: {"access_token": ACCESSTOKEN},
+    );
+
+    if (response.statusCode == 200) {
+      return;
+    }
+    Fluttertoast.showToast(
+        msg: "Invalid token",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 14.0);
+}
+
+deactivateCodes() async {
+
+  var body = {
+    "user_id": USERID,
+  };
+
+  var response = await http.post(
+    Uri.parse(
+        "http://$ipAddress:8081/sky-auth/status/deactivate"),
+    body: jsonEncode(body),
+    headers: {"access_token": ACCESSTOKEN},
+  );
+
+  if (response.statusCode == 200) {
+    return;
+  }
+  Fluttertoast.showToast(
+      msg: "Invalid token",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 14.0);
+}
+
 Future<bool> hasNetwork() async {
   try {
     final result = await InternetAddress.lookup('example.com');
     return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
   } on SocketException catch (_) {
     return false;
+  }
+}
+
+addProgram(var token) async {
+  var body = {"token": token, "user_id": USERID};
+
+  var response = await http.post(
+    Uri.parse("http://$ipAddress:8081/sky-auth/authorization/program/link_program"),
+    body: jsonEncode(body),
+    headers: {"access_token": ACCESSTOKEN},
+  );
+
+  if(response.statusCode == 200){
+    Fluttertoast.showToast(
+        msg: "Program Added",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: const Color.fromARGB(255, 75, 181, 67),
+        textColor: Colors.white,
+        fontSize: 14.0);
+  }else if(response.statusCode == 400){
+    Fluttertoast.showToast(
+        msg: "Invalid Token Provided",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 14.0);
   }
 }
 
@@ -37,6 +119,7 @@ confirmIdentifier(identifier, identifierType, text) async {
       body: jsonEncode(body),
       headers: {"access_token": ACCESSTOKEN},
     );
+
     if (response.statusCode == 200) {
       individualIdentifier = "";
       individualIdentifier = identifier;
@@ -368,7 +451,6 @@ Future<String> LoginToApp(var name, var pass, var context) async {
 
       return "OK";
     } else {
-
       //context.loaderOverlay.hide();
       Fluttertoast.showToast(
           msg: "INVALID CREDENTIALS",
@@ -406,7 +488,6 @@ Future<int> getIdentifierAndTypes() async {
     var responseIdentifierTypes = await http.get(
         Uri.parse('http://$ipAddress:8081/sky-auth/identifier_type'),
         headers: {"access_token": ACCESSTOKEN});
-    try {
       if (responseIdentifiers.statusCode == 200 &&
           responseIdentifierTypes.statusCode == 200) {
         var identifiersFromDB = jsonDecode(responseIdentifiers.body);
@@ -429,18 +510,9 @@ Future<int> getIdentifierAndTypes() async {
         try {
           individualIdentifier = constantIdentifiers[0]["identifier"];
         } catch (e) {}
+      }else{
+        throw Exception('LOGIN');
       }
-    } catch (e) {
-      print(e);
-      Fluttertoast.showToast(
-          msg: "Something went wrong. Try again later",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 14.0);
-    }
   } else {
     Fluttertoast.showToast(
         msg: "No Internet Connection",
@@ -470,14 +542,7 @@ Future<int> getPrograms() async {
       programs = programsFromDB;
     } catch (e) {
       //Navigator.of(context).pushReplacementNamed('/login');
-      Fluttertoast.showToast(
-          msg: "Login To Continue",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 14.0);
+      throw Exception('LOGIN');
     }
   } else {
     Fluttertoast.showToast(
@@ -500,7 +565,7 @@ Future<int> getStatusCodes() async {
       Uri.parse("http://$ipAddress:8081/sky-auth/auth_details?user_id=" +
           USERID.toString() +
           "&identifier=" +
-          individualIdentifier),
+          individualIdentifier), 
       headers: {"access_token": ACCESSTOKEN},
     );
     if (response.statusCode == 200) {
@@ -524,8 +589,38 @@ Future<int> getStatusCodes() async {
   return 1;
 }
 
-Future<String> signUp(String fName, String lName, String uName, String natID, String pass,
-    context) async {
+Future<int> getAllStatusCodes() async {
+  bool isOnline = await hasNetwork();
+  if (isOnline) {
+    var response = await http.get(
+      Uri.parse("http://$ipAddress:8081/sky-auth/auth_details?user_id=$USERID"),
+      headers: {"access_token": ACCESSTOKEN},
+    );
+    if (response.statusCode == 200) {
+      try {
+        authCodes = jsonDecode(response.body);
+      } catch (e) {
+        authCodes = [jsonDecode(response.body)];
+      }
+    }else{
+      throw Exception('LOGIN');
+    }
+  } else {
+    Fluttertoast.showToast(
+        msg: "No Internet Connection",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 14.0);
+  }
+
+  return 1;
+}
+
+Future<String> signUp(String fName, String lName, String uName, String natID,
+    String pass, context) async {
   bool isOnline = await hasNetwork();
   if (isOnline) {
     try {
@@ -638,3 +733,5 @@ deleteProgram(identifier, progid) async {
         fontSize: 14.0);
   }
 }
+
+ResetPassword(var password, var context) async {}

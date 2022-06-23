@@ -29,7 +29,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
       return Dismissible(
         key: Key(constantIdentifiers[widget.index]['identifier']),
         background: Container(
-          color: Colors.green,
+          color: Colors.red,
           child: Align(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -42,7 +42,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                   color: Colors.white,
                 ),
                 Text(
-                  "Enter token",
+                  "Swipe Left To Delete ",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -72,6 +72,9 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                   ),
                   textAlign: TextAlign.right,
                 ),
+                SizedBox(
+                  width: 20,
+                ),
               ],
             ),
             alignment: Alignment.centerRight,
@@ -91,7 +94,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                     content: Text(
                         "Are you sure you want to delete ${constantIdentifiers[widget.index]['identifier']}?"),
                     actions: <Widget>[
-                      FlatButton(
+                      TextButton(
                         child: const Text(
                           "Cancel",
                           //style: TextStyle(color: Colors.black),
@@ -100,7 +103,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                           Navigator.of(context).pop();
                         },
                       ),
-                      FlatButton(
+                      TextButton(
                         child: const Text(
                           "Delete",
                           style: TextStyle(color: Colors.red),
@@ -120,11 +123,6 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                   );
                 });
             return res;
-          } else {
-            await confirmIdentifierDialogPopUp(
-                constantIdentifiers[widget.index]['identifier'],
-                constantIdentifiers[widget.index]["identifier_type"],
-                context);
           }
         },
         child: Column(
@@ -165,11 +163,11 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                       return FractionallySizedBox(
                         heightFactor: 0.5,
                         child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Column(
                             children:[
                               Container(
-                                padding: EdgeInsets.fromLTRB(15, 0, 15, 10),
+                                padding: const EdgeInsets.fromLTRB(15, 0, 15, 10),
                                 child:Row(
                                   children:   [
                                     Text(
@@ -259,7 +257,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                                                 content: Text(
                                                     "Are you sure you want to remove ${programNames[index]}?"),
                                                 actions: <Widget>[
-                                                  FlatButton(
+                                                  TextButton(
                                                     child: const Text(
                                                       "Cancel",
                                                     ),
@@ -267,7 +265,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
                                                       Navigator.of(context).pop();
                                                     },
                                                   ),
-                                                  FlatButton(
+                                                  TextButton(
                                                     child: const Text(
                                                       "Delete",
                                                       style: TextStyle(color: Colors.red),
@@ -473,26 +471,24 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
         ),
       );
     } catch (exception) {
-      return Container(
-        child: Column(
-          children: const [
-            ListTile(
-              enabled: true,
-              title: SizedBox(
-                //width: size.width * 0.6,
-                child: Text(
-                  "Add an identifier to view it",
-                  maxLines: 2,
-                  style: TextStyle(
-                    //fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
+      return Column(
+        children: const [
+          ListTile(
+            enabled: true,
+            title: SizedBox(
+              //width: size.width * 0.6,
+              child: Text(
+                "Add an identifier to view it",
+                maxLines: 2,
+                style: TextStyle(
+                  //fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
   }
@@ -545,7 +541,7 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
           content: Text(
               "Link ${constantIdentifiers[widget.index]['identifier']} to a program"),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: TextField(
                 controller: _token,
                 style: const TextStyle(fontSize: 14),
@@ -556,14 +552,14 @@ class _IdentifierListTileState extends State<IdentifierListTile> {
               ),
               onPressed: () {},
             ),
-            FlatButton(
+            TextButton(
               child: const Text(
                 "Confirm",
               ),
               onPressed: () async {
                 await confirmIdentifier(
-                    constantIdentifiers[widget.index]["identifier_type"],
                     constantIdentifiers[widget.index]['identifier'],
+                    constantIdentifiers[widget.index]["identifier_type"],
                     _token.text);
                 await getIdentifierAndTypes();
                 setState(() {});

@@ -1,16 +1,10 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sky_auth/components/background.dart';
 import 'package:sky_auth/constants.dart';
-import 'package:http/http.dart' as http;
-import 'package:crypto/crypto.dart';
 
-import 'dart:collection';
-import 'dart:convert';
 
 import '../../API/ApiFunctions.dart';
 
@@ -151,8 +145,8 @@ class _SignupState extends State<Signup> {
                           obscureText: false,
                           decoration:  InputDecoration(
                             labelText: "Password",
-                            labelStyle: TextStyle(fontSize: 16),
-                            border: OutlineInputBorder(),
+                            labelStyle: const TextStyle(fontSize: 16),
+                            border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               onPressed: () {
                                 _visibility.value = false;
@@ -173,7 +167,7 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(4),
                     color: kPrimary,
                   ),
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () async {
                       FocusManager.instance.primaryFocus?.unfocus();
                       String fName = _firstname.text;

@@ -1,9 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:sky_auth/components/background.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +37,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 alignment: Alignment.center,
-                child:  Text(
+                child: Text(
                   "SKY AUTH",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -52,7 +50,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 height: 20,
               ),
               Image.asset(
-                'assets/images/Sky-Wolrd-Logo-1-removebg-preview.png',
+                'assets/images/Sky-World-Logo-no-bg.png',
                 width: size.width * 0.9,
                 height: size.height * 0.55,
               ),
@@ -127,6 +125,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     checkLoginState(context);
   }
+
   void checkLoginState(var context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -159,11 +158,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       context.loaderOverlay.show();
       ACCESSTOKEN = access_token;
       USERID = userId;
-      await getIdentifierAndTypes();
-      await getPrograms();
-      await getStatusCodes();
-      if(mounted){
-        Navigator.of(context).pushReplacementNamed("/homePage");
+      try {
+        await getIdentifierAndTypes();
+        await getPrograms();
+        await getAllStatusCodes();
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed("/homePage");
+          context.loaderOverlay.hide();
+        }
+      } catch (e) {
+        Navigator.of(context).pushReplacementNamed("/login");
         context.loaderOverlay.hide();
       }
     }

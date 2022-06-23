@@ -36,12 +36,23 @@ class _HomepageStatusCodesList extends State<HomepageStatusCodesList> {
               }
             }
             // ignore: sized_box_for_whitespace
+            if(authCodes[index]["isnew"] == 'YES'){
+              return StatusCodeWidget
+                (
+                progName,
+                authCodes[index]["time_remaining"],
+                authCodes[index]["time_to_live"],
+                authCodes[index]["auth_code"],
+                authCodes[index]["identifier"],
+              );
+            }
             return StatusCodeWidget(
               progName,
               authCodes[index]["time_to_live"] -
                   authCodes[index]["age"]["wholeSeconds"],
               authCodes[index]["time_to_live"],
               authCodes[index]["auth_code"],
+                authCodes[index]["identifier"],
             );
           } catch (e) {
             return Container(

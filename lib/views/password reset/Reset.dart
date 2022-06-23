@@ -1,25 +1,19 @@
-// ignore_for_file: non_constant_identifier_names, duplicate_ignore
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:sky_auth/components/background.dart';
-import 'package:sky_auth/constants.dart';
-
 
 import '../../API/ApiFunctions.dart';
+import '../../components/background.dart';
+import '../../constants.dart';
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+class Reset extends StatefulWidget {
+  const Reset({Key? key}) : super(key: key);
 
   @override
-  State<Login> createState() => _LoginState();
+  State<Reset> createState() => _ResetState();
 }
 
-class _LoginState extends State<Login> {
-  final TextEditingController _username = TextEditingController();
+class _ResetState extends State<Reset> {
   final TextEditingController _password = TextEditingController();
-
-  final ValueNotifier<bool> _visibility = ValueNotifier(false);
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -45,7 +39,7 @@ class _LoginState extends State<Login> {
                         width: size.width * 0.9,
                         margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                         child: const Text(
-                          "Log In",
+                          "Reset Password",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 25,
@@ -54,78 +48,6 @@ class _LoginState extends State<Login> {
                       ),
                       const SizedBox(
                         height: 10,
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        height: 50,
-                        width: size.width * 0.9,
-                        margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                        child: TextField(
-                          keyboardType: TextInputType.text,
-                          controller: _username,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Username',
-                            labelStyle: TextStyle(fontSize: 16),
-                            //border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      ValueListenableBuilder(
-                        valueListenable: _visibility,
-                        builder: (context, takenSurvey, child) {
-                          if (_visibility.value == false) {
-                            return Container(
-                              alignment: Alignment.center,
-                              height: 50,
-                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                              width: size.width * 0.9,
-                              child: TextField(
-                                controller: _password,
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  border: const OutlineInputBorder(),
-                                  labelText: "Password",
-                                  labelStyle: const TextStyle(fontSize: 16),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      _visibility.value = true;
-                                    },
-                                    icon: const Icon(Icons.visibility),
-                                  ),
-                                  //border: InputBorder.none,
-                                ),
-                              ),
-                            );
-                          } else {
-                            return Container(
-                              alignment: Alignment.center,
-                              height: 50,
-                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                              width: size.width * 0.9,
-                              child: TextField(
-                                controller: _password,
-                                obscureText: false,
-                                decoration: InputDecoration(
-                                  border: const OutlineInputBorder(),
-                                  labelText: "Password",
-                                  labelStyle: const TextStyle(fontSize: 16),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      _visibility.value = false;
-                                    },
-                                    icon: const Icon(
-                                        Icons.visibility_off_rounded),
-                                  ),
-                                  //border: InputBorder.none,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      const SizedBox(
-                        height: 5,
                       ),
                       Container(
                         height: 50,
@@ -139,10 +61,9 @@ class _LoginState extends State<Login> {
                           onPressed: () async {
                             FocusManager.instance.primaryFocus?.unfocus();
                             context.loaderOverlay.show();
-                            var username = _username.text;
                             var password = _password.text;
                             context.loaderOverlay.show();
-                            var result = await LoginToApp(username, password, context);
+                            var result = await ResetPassword(password, context);
                             context.loaderOverlay.hide();
 
                             if(result == "OK") {

@@ -1,6 +1,5 @@
 // ignore_for_file: file_names
 
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:sky_auth/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,49 +12,15 @@ class DrawerWidget extends StatefulWidget {
   @override
   State<DrawerWidget> createState() => _DrawerWidgetState();
 
-  @override
   Duration get transitionDuration => const Duration(milliseconds: 0);
 }
 
 class _DrawerWidgetState extends State<DrawerWidget> {
-  late String _defaultValue;
-
-  @override
-  void initState() {
-    try {
-      if (individualIdentifier != "") {
-        _defaultValue = individualIdentifier;
-      } else {
-        _defaultValue = constantIdentifiers[0]["identifier"];
-      }
-    } catch (e) {
-      _defaultValue = "No identifiers";
-    }
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    final ThemeData mode = Theme.of(context);
-    var whichMode = mode.brightness;
-    Color COLOR = Colors.black;
-    if (whichMode == Brightness.dark) {
-      COLOR = Colors.white;
-    }
-
-    try {
-      if (individualIdentifier != "") {
-        _defaultValue = individualIdentifier;
-        getStatusCodes();
-      } else if (constantIdentifiers.isNotEmpty) {
-        _defaultValue = constantIdentifiers[0]["identifier"];
-        getStatusCodes();
-      }
-    } catch (e) {
-      _defaultValue = "No identifiers";
-    }
     return Drawer(
       child: Material(
         child: Container(
@@ -99,66 +64,66 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                           ),
                         ),
                       ),
-                      DropdownButtonHideUnderline(
-                        child: DropdownButton2(
-                          isExpanded: true,
-                          value: _defaultValue,
-                          style: const TextStyle(
-                            fontSize: 16,
-                          ),
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                          ),
-                          iconOnClick: const Icon(
-                            Icons.arrow_drop_up,
-                          ),
-                          dropdownDecoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: Colors.blueGrey,
-                          ),
-                          onChanged: (newValue) async {
-                            if (newValue.toString() == "No identifiers") {
-                              _defaultValue = newValue.toString();
-                              return;
-                            }
-                            _defaultValue = newValue.toString();
-                            individualIdentifier = newValue.toString();
-
-                            await getStatusCodes();
-                            Navigator.of(context).pushReplacementNamed('/homePage');
-                          },
-                          items: constantIdentifiers.map((identifiers) {
-                            try {
-                              return DropdownMenuItem(
-                                child: SizedBox(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        identifiers['identifier'],
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                value: identifiers['identifier'],
-                              );
-                            } catch (e) {
-                              return const DropdownMenuItem(
-                                child: Text(
-                                  "No identifiers",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                value: "No identifiers",
-                              );
-                            }
-                          }).toList(),
-                        ),
-                      ),
+                      // DropdownButtonHideUnderline(
+                      //   child: DropdownButton2(
+                      //     isExpanded: true,
+                      //     value: _defaultValue,
+                      //     style: const TextStyle(
+                      //       fontSize: 16,
+                      //     ),
+                      //     icon: const Icon(
+                      //       Icons.arrow_drop_down,
+                      //     ),
+                      //     iconOnClick: const Icon(
+                      //       Icons.arrow_drop_up,
+                      //     ),
+                      //     dropdownDecoration: BoxDecoration(
+                      //       borderRadius: BorderRadius.circular(15),
+                      //       color: Colors.blueGrey,
+                      //     ),
+                      //     onChanged: (newValue) async {
+                      //       if (newValue.toString() == "No identifiers") {
+                      //         _defaultValue = newValue.toString();
+                      //         return;
+                      //       }
+                      //       _defaultValue = newValue.toString();
+                      //       individualIdentifier = newValue.toString();
+                      //
+                      //       await getStatusCodes();
+                      //       Navigator.of(context).pushReplacementNamed('/homePage');
+                      //     },
+                      //     items: constantIdentifiers.map((identifiers) {
+                      //       try {
+                      //         return DropdownMenuItem(
+                      //           child: SizedBox(
+                      //             child: Row(
+                      //               children: [
+                      //                 Text(
+                      //                   identifiers['identifier'],
+                      //                   style: const TextStyle(
+                      //                     color: Colors.white,
+                      //                     fontSize: 16,
+                      //                   ),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //           value: identifiers['identifier'],
+                      //         );
+                      //       } catch (e) {
+                      //         return const DropdownMenuItem(
+                      //           child: Text(
+                      //             "No identifiers",
+                      //             style: TextStyle(
+                      //               fontSize: 16,
+                      //             ),
+                      //           ),
+                      //           value: "No identifiers",
+                      //         );
+                      //       }
+                      //     }).toList(),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -199,7 +164,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     builder: (context) => AlertDialog(
                       content: const Text("Are you sure you want to logout?"),
                       actions: <Widget>[
-                        FlatButton(
+                        TextButton(
                           child: const Text(
                             "No",
                             //style: TextStyle(color: Colors.black),
@@ -208,7 +173,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                             Navigator.of(context).pop();
                           },
                         ),
-                        FlatButton(
+                        TextButton(
                           child: const Text(
                             "Yes",
                             style: TextStyle(color: Colors.red),

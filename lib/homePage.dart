@@ -1,6 +1,5 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
@@ -43,21 +42,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     )
   ];
   var title;
-  late String _defaultValue;
-
 
   @override
   void initState() {
     super.initState();
-    try {
-      if (individualIdentifier != "") {
-        _defaultValue = individualIdentifier;
-      } else {
-        _defaultValue = constantIdentifiers[0]["identifier"];
-      }
-    } catch (e) {
-      _defaultValue = "No identifiers";
-    }
     getProgramsForIdentifier();
     WidgetsBinding.instance?.addObserver(this);
   }
@@ -85,13 +73,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         // --
-        await getStatusCodes();
+        await activateCodes();
+        await getAllStatusCodes();
         Navigator.of(context).pushReplacementNamed('/homePage');
         break;
       case AppLifecycleState.inactive:
         // TODO: Handle this case.
         break;
       case AppLifecycleState.paused:
+        await deactivateCodes();
         // TODO: Handle this case.
         break;
       case AppLifecycleState.detached:
@@ -106,188 +96,105 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     final ThemeData mode = Theme.of(context);
     var whichMode = mode.brightness;
+    // ignore: non_constant_identifier_names
     Color COLOR = Colors.white;
-    Color COLOR2 = Colors.black;
     if (whichMode == Brightness.dark) {
       COLOR = Colors.black;
-      COLOR2 = Colors.white;
     }
 
-
-    if (individualIdentifier == "") {
+    //if (individualIdentifier == "") {
+    if (true) {
       title = const Text(
         "SKY AUTH",
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 20,
         ),
       );
-    } else {
-      try {
-        title = DropdownButtonHideUnderline(
-          child: DropdownButton2(
-            isExpanded: true,
-            value: _defaultValue,
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-            icon: const Icon(
-              Icons.arrow_drop_down,
-            ),
-            iconOnClick: const Icon(
-              Icons.arrow_drop_up,
-            ),
-            dropdownDecoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Colors.blueGrey,
-            ),
-            onChanged: (newValue) async {
-              if (newValue.toString() == "No identifiers") {
-                _defaultValue = newValue.toString();
-                return;
-              }
-              _defaultValue = newValue.toString();
-              individualIdentifier = newValue.toString();
-
-              await getStatusCodes();
-              Navigator.of(context).pushReplacementNamed('/homePage');
-            },
-            items: constantIdentifiers.map((identifiers) {
-              try {
-                return DropdownMenuItem(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        identifiers['identifier_type'],
-                        overflow: TextOverflow.fade,
-                        maxLines: 1,
-                        softWrap: false,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                        ),
-                      ),
-                      Text(
-                      identifiers['identifier'],
-                      overflow: TextOverflow.fade,
-                      maxLines: 1,
-                      softWrap: false,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        //fontSize: 16,
-                      ),
-                    ),
-                    ],
-                  ),
-                  value: identifiers['identifier'],
-                );
-              } catch (e) {
-                return const DropdownMenuItem(
-                  child: Text(
-                    "No identifiers",
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  value: "No identifiers",
-                );
-              }
-            }).toList(),
-          ),
-        );
-      }catch(e){
-        title = Text(
-          individualIdentifier,
-          style: const TextStyle(
-            fontSize: 16,
-          ),
-        );
-      }
     }
 
     _checkConnectivityState();
-    return GestureDetector(
-      child: ValueListenableBuilder(
-        valueListenable: _online,
-        builder: (context, takenSurvey, child) {
-          if (_online.value == true) {
-            return SafeArea(
-              child: Scaffold(
-                drawer: const DrawerWidget(),
-                appBar: AppBar(
-                  toolbarHeight: size.height * 0.1,
-                  backgroundColor: kPrimary,
-                  elevation: 10,
-                  title: SizedBox(
-                    child: title,
-                  ),
-                  actions: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(0,0,20,0),
-                      child: FocusedMenuHolder(
-                        blurBackgroundColor: Colors.blueGrey[900],
-                        openWithTap: true,
-                        onPressed: () {},
-                        animateMenuItems: true,
-                        menuItems: items
-                            .map((e) => FocusedMenuItem(
-                                title: e,
-                                onPressed: () async {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      content: const Text(
-                                          "Are you sure you want to logout?"),
-                                      actions: <Widget>[
-                                        FlatButton(
-                                          child: const Text(
-                                            "No",
-                                            //style: TextStyle(color: Colors.black),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
+    return ValueListenableBuilder(
+      valueListenable: _online,
+      builder: (context, takenSurvey, child) {
+        if (_online.value == true) {
+          return SafeArea(
+            child: Scaffold(
+              drawer: const DrawerWidget(),
+              appBar: AppBar(
+                toolbarHeight: size.height * 0.1,
+                backgroundColor: kPrimary,
+                centerTitle: true,
+                elevation: 10,
+                title: SizedBox(
+                  child: title,
+                ),
+                actions: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                    child: FocusedMenuHolder(
+                      blurBackgroundColor: Colors.blueGrey[900],
+                      openWithTap: true,
+                      onPressed: () {},
+                      animateMenuItems: true,
+                      menuItems: items
+                          .map((e) => FocusedMenuItem(
+                              title: e,
+                              onPressed: () async {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    content: const Text(
+                                        "Are you sure you want to logout?"),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text(
+                                          "No",
+                                          //style: TextStyle(color: Colors.black),
                                         ),
-                                        FlatButton(
-                                          child: const Text(
-                                            "Yes",
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                          onPressed: () async {
-                                            final SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-
-                                            prefs.setString('user_id', "");
-                                            prefs.setString('ip_address', "");
-                                            prefs.setString('access_token', "");
-                                            prefs.setString('username', "");
-
-                                            Navigator.pop(context);
-                                            Navigator.pushReplacementNamed(
-                                                context, '/login');
-                                          },
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text(
+                                          "Yes",
+                                          style: TextStyle(color: Colors.red),
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                }))
-                            .toList(),
-                        child: CircleAvatar(
-                          radius: size.height * 0.035,
-                          backgroundColor: Colors.brown.shade800,
-                          child: Text(INITIALS),
-                        ),
+                                        onPressed: () async {
+                                          final SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+
+                                          prefs.setString('user_id', "");
+                                          prefs.setString('ip_address', "");
+                                          prefs.setString('access_token', "");
+                                          prefs.setString('username', "");
+
+                                          Navigator.pop(context);
+                                          Navigator.pushReplacementNamed(
+                                              context, '/login');
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }))
+                          .toList(),
+                      child: CircleAvatar(
+                        radius: size.height * 0.035,
+                        backgroundColor: Colors.brown.shade800,
+                        child: Text(INITIALS),
                       ),
                     ),
-                  ],
-                ),
-                body: StreamBuilder(
+                  ),
+                ],
+              ),
+              body: Container(
+                margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: StreamBuilder(
                     stream: Connectivity().onConnectivityChanged,
                     builder: (BuildContext ctxt,
                         AsyncSnapshot<ConnectivityResult> snapShot) {
-
                       var result = snapShot.data;
                       switch (result) {
                         case ConnectivityResult.none:
@@ -388,226 +295,226 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           );
                       }
                     }),
-                floatingActionButton: ExpandableFab(
-                  distance: 90.0,
-                  children: [
-                    Row(
-                      children: [
-                        const Text("Scan QR Code"),
-                        SizedBox(
-                          width: size.width * 0.03,
-                        ),
-                        ActionButton(
-                          onPressed: scan,
-                          icon: Icon(
-                            Icons.qr_code,
-                            color: COLOR,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text("Add Identifier"),
-                        SizedBox(
-                          width: size.width * 0.03,
-                        ),
-                        ActionButton(
-                          onPressed: () {
-                            show = true;
-                            Navigator.pushReplacementNamed(
-                                context, '/identifiers');
-                          },
-                          icon: Icon(
-                            Icons.add,
-                            color: COLOR,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ),
-            );
-          } else {
-            return SafeArea(
-              child: Scaffold(
-                drawer: const DrawerWidget(),
-                appBar: AppBar(
-                  toolbarHeight: size.height * 0.1,
-                  backgroundColor: kPrimary,
-                  elevation: 10,
-                  title: SizedBox(
-                    width: size.width * 0.6,
-                    child: title,
-                  ),
-                  actions: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: FocusedMenuHolder(
-                        blurBackgroundColor: Colors.blueGrey[900],
-                        openWithTap: true,
-                        onPressed: () {},
-                        animateMenuItems: true,
-                        menuItems: items
-                            .map((e) => FocusedMenuItem(
-                                title: e,
-                                onPressed: () async {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      content: const Text(
-                                          "Are you sure you want to logout?"),
-                                      actions: <Widget>[
-                                        FlatButton(
-                                          child: const Text(
-                                            "No",
-                                            //style: TextStyle(color: Colors.black),
-                                          ),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                        FlatButton(
-                                          child: const Text(
-                                            "Yes",
-                                            style: TextStyle(color: Colors.red),
-                                          ),
-                                          onPressed: () async {
-                                            final SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-
-                                            prefs.setString('user_id', "");
-                                            prefs.setString('ip_address', "");
-                                            prefs.setString('access_token', "");
-                                            prefs.setString('username', "");
-
-                                            Navigator.pop(context);
-                                            Navigator.pushReplacementNamed(
-                                                context, '/login');
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }))
-                            .toList(),
-                        child: CircleAvatar(
-                          radius: size.height * 0.035,
-                          backgroundColor: Colors.brown.shade800,
-                          child: Text(INITIALS),
+              floatingActionButton: ExpandableFab(
+                distance: 90.0,
+                children: [
+                  Row(
+                    children: [
+                      const Text("Scan QR Code"),
+                      SizedBox(
+                        width: size.width * 0.03,
+                      ),
+                      ActionButton(
+                        onPressed: scan,
+                        icon: Icon(
+                          Icons.qr_code,
+                          color: COLOR,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text("Add Program"),
+                      SizedBox(
+                        width: size.width * 0.03,
+                      ),
+                      ActionButton(
+                        onPressed: () {
+                          show = true;
+                          Navigator.pushReplacementNamed(
+                              context, '/identifiers');
+                        },
+                        icon: Icon(
+                          Icons.add,
+                          color: COLOR,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          return SafeArea(
+            child: Scaffold(
+              drawer: const DrawerWidget(),
+              appBar: AppBar(
+                toolbarHeight: size.height * 0.1,
+                backgroundColor: kPrimary,
+                elevation: 10,
+                title: SizedBox(
+                  width: size.width * 0.6,
+                  child: title,
                 ),
-                body: Shimmer.fromColors(
-                  baseColor: kPrimaryLightColor,
-                  highlightColor: Colors.grey,
-                  enabled: true,
-                  child: ListView.builder(
-                    itemBuilder: (_, __) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10.0, horizontal: 8.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            width: 48.0,
-                            height: 48.0,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              color: Colors.white,
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  width: size.width * 0.7,
-                                  height: 8.0,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Colors.white,
+                actions: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: FocusedMenuHolder(
+                      blurBackgroundColor: Colors.blueGrey[900],
+                      openWithTap: true,
+                      onPressed: () {},
+                      animateMenuItems: true,
+                      menuItems: items
+                          .map((e) => FocusedMenuItem(
+                              title: e,
+                              onPressed: () async {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    content: const Text(
+                                        "Are you sure you want to logout?"),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text(
+                                          "No",
+                                          //style: TextStyle(color: Colors.black),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text(
+                                          "Yes",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                        onPressed: () async {
+                                          final SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+
+                                          prefs.setString('user_id', "");
+                                          prefs.setString('ip_address', "");
+                                          prefs.setString('access_token', "");
+                                          prefs.setString('username', "");
+
+                                          Navigator.pop(context);
+                                          Navigator.pushReplacementNamed(
+                                              context, '/login');
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                ),
-                                Container(
-                                  width: size.width * 0.5,
-                                  height: 8.0,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                ),
-                                Container(
-                                  width: 40.0,
-                                  height: 8.0,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                                );
+                              }))
+                          .toList(),
+                      child: CircleAvatar(
+                        radius: size.height * 0.035,
+                        backgroundColor: Colors.brown.shade800,
+                        child: Text(INITIALS),
                       ),
                     ),
-                    itemCount: 10,
                   ),
-                ),
-                floatingActionButton: ExpandableFab(
-                  distance: 90.0,
-                  children: [
-                    Row(
-                      children: [
-                        const Text("Scan QR Code"),
-                        SizedBox(
-                          width: size.width * 0.03,
-                        ),
-                        ActionButton(
-                          onPressed: scan,
-                          icon: Icon(
-                            Icons.qr_code,
-                            color: COLOR,
+                ],
+              ),
+              body: Shimmer.fromColors(
+                baseColor: kPrimaryLightColor,
+                highlightColor: Colors.grey,
+                enabled: true,
+                child: ListView.builder(
+                  itemBuilder: (_, __) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Container(
+                          width: 48.0,
+                          height: 48.0,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            color: Colors.white,
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text("Identifiers"),
-                        SizedBox(
-                          width: size.width * 0.03,
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
                         ),
-                        ActionButton(
-                          onPressed: () => Navigator.of(context)
-                              .pushReplacementNamed("/identifiers"),
-                          icon: Icon(
-                            Icons.add,
-                            color: COLOR,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                width: size.width * 0.7,
+                                height: 8.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 2.0),
+                              ),
+                              Container(
+                                width: size.width * 0.5,
+                                height: 8.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 2.0),
+                              ),
+                              Container(
+                                width: 40.0,
+                                height: 8.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                        )
                       ],
                     ),
-                  ],
+                  ),
+                  itemCount: 10,
                 ),
               ),
-            );
-          }
-        },
-      ),
+              floatingActionButton: ExpandableFab(
+                distance: 90.0,
+                children: [
+                  Row(
+                    children: [
+                      const Text("Scan QR Code"),
+                      SizedBox(
+                        width: size.width * 0.03,
+                      ),
+                      ActionButton(
+                        onPressed: scan,
+                        icon: Icon(
+                          Icons.qr_code,
+                          color: COLOR,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Text("Identifiers"),
+                      SizedBox(
+                        width: size.width * 0.03,
+                      ),
+                      ActionButton(
+                        onPressed: () => Navigator.of(context)
+                            .pushReplacementNamed("/identifiers"),
+                        icon: Icon(
+                          Icons.add,
+                          color: COLOR,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -626,7 +533,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       var exists = false;
 
       try {
-        if (constantIdentifiers != null && constantIdentifiers.isNotEmpty) {
+        if (constantIdentifiers.isNotEmpty) {
           for (int i = 0; i < constantIdentifiers.length; i++) {
             try {
               if (constantIdentifiers[i]["identifier"] == ident) {
@@ -640,12 +547,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         }
         if (exists) {
           await confirmIdentifier(ident, identType, token);
-          Get.off(HomePage());
+          Get.off(const HomePage());
           return;
         } else {
           await addIdentifierToDB(ident, identType);
           await confirmIdentifier(ident, identType, token);
-          Get.off(HomePage());
+          Get.off(const HomePage());
           return;
         }
       } catch (e) {

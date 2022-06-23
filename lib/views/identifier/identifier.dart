@@ -2,9 +2,7 @@
 
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
@@ -26,11 +24,10 @@ class Identifiers extends StatefulWidget {
   @override
   State<Identifiers> createState() => _IdentifiersState();
 
-  @override
   Duration get transitionDuration => const Duration(milliseconds: 0);
 }
 
-class _IdentifiersState extends State<Identifiers> {
+class _IdentifiersState extends State<Identifiers>  with WidgetsBindingObserver {
   var selectedIndex = 1;
   var VALUE;
   var items = [
@@ -43,7 +40,34 @@ class _IdentifiersState extends State<Identifiers> {
     )
   ];
 
-  TextEditingController _identifier = TextEditingController();
+  final TextEditingController _token = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addObserver(this);
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+      // --
+        await activateCodes();
+        await getAllStatusCodes();
+        break;
+      case AppLifecycleState.inactive:
+      // TODO: Handle this case.
+        break;
+      case AppLifecycleState.paused:
+        await deactivateCodes();
+        // TODO: Handle this case.
+        break;
+      case AppLifecycleState.detached:
+      // TODO: Handle this case.
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +80,7 @@ class _IdentifiersState extends State<Identifiers> {
       COLOR = Colors.black;
     }
 
-    if(show){
+    if (show) {
       show = false;
       WidgetsBinding.instance?.addPostFrameCallback((_) async {
         showModalBottomSheet(
@@ -66,148 +90,108 @@ class _IdentifiersState extends State<Identifiers> {
                 top: Radius.circular(20),
               ),
             ),
-            isScrollControlled:true,
+            isScrollControlled: true,
             clipBehavior: Clip.antiAliasWithSaveLayer,
-            builder: (builder){
+            builder: (builder) {
               return Padding(
-                  child:  FractionallySizedBox(
+                  child: FractionallySizedBox(
+                    //heightFactor: 0.8,
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                            child:Row(
-                              children:   [
+                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                            child: Row(
+                              children: [
                                 const Text(
-                                  "Add Identifier",
+                                  "Add Program",
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Spacer(),
+                                const Spacer(),
                                 GestureDetector(
-                                  onTap: (){
+                                  onTap: () {
                                     Navigator.pop(context);
                                   },
-                                  child:const Icon(Icons.cancel_outlined,size: 25,),
-                                )
-
-                              ],
-                            ) ,
-                          ),
-                          const Divider(thickness: 2,),
-                          Container(
-                            alignment: Alignment.center,
-                            height: 50,
-                            width: double.infinity,
-                            margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                            child: DropdownButtonFormField2(
-                              decoration: const InputDecoration(
-                                isDense: true,
-                                labelText: "Identifier Type",
-                                border: OutlineInputBorder(
-                                ),
-                              ),
-                              isExpanded: true,
-                              icon: const Icon(
-                                Icons.arrow_drop_down,
-                              ),
-                              iconOnClick: const Icon(
-                                Icons.arrow_drop_up,
-                              ),
-                              iconSize: 30,
-                              buttonHeight: 60,
-                              //buttonPadding: const EdgeInsets.only(left: 20, right: 10),
-                              dropdownDecoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              onChanged: (newValue) {
-                                defaultValue = newValue;
-                              },
-                              items: constantIdentifierTypes.map((identifierType) {
-                                return DropdownMenuItem(
-                                  child: Text(
-                                    identifierType["identifier_type"],
+                                  child: const Icon(
+                                    Icons.cancel_outlined,
+                                    size: 25,
                                   ),
-                                  value: identifierType["identifier_type"],
-                                );
-                              }).toList(),
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Please select identifier.';
-                                }
-                              },
+                                )
+                              ],
                             ),
                           ),
+                          const Divider(
+                            thickness: 2,
+                          ),
                           Container(
                             alignment: Alignment.center,
                             height: 50,
                             width: double.infinity,
-                            margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            margin:
+                            const EdgeInsets.fromLTRB(10, 10, 10, 10),
                             child: TextField(
                               onChanged: (value) {
                                 setState(() {
-                                  VALUE = _identifier.text;
+                                  VALUE = _token.text;
                                 });
                               },
                               style: const TextStyle(fontSize: 14),
-                              controller: _identifier,
+                              controller: _token,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
-                                labelText: 'Identifier',
+                                labelText: 'Enter Program Token',
                                 labelStyle: TextStyle(fontSize: 16),
                                 //border: InputBorder.none,
                               ),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              String Identifier = VALUE;
+                          Container(
+                            height: 50,
+                            width: double.infinity,
+                            margin:
+                            const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: kPrimaryLightColor,
+                            ),
+                            child: FlatButton(
+                              onPressed: () async {
+                                FocusManager.instance.primaryFocus
+                                    ?.unfocus();
+                                String token = VALUE;
 
-                              if(defaultValue == null){
-                                Fluttertoast.showToast(
-                                    msg: "Select Identifier Type",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 1,
-                                    backgroundColor: Colors.red,
-                                    textColor: Colors.white,
-                                    fontSize: 14.0);
-                                return;
-                              }else if(Identifier == null || Identifier == ""){
-                                Fluttertoast.showToast(
-                                    msg: "Identifier Can't Be Empty ",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 1,
-                                    backgroundColor: Colors.red,
-                                    textColor: Colors.white,
-                                    fontSize: 14.0);
-                                return;
-                              }
-                              String identifierType = defaultValue;
-                              await addIdentifierToDB(Identifier, identifierType);
-                              Navigator.of(context).pushReplacementNamed("/identifiers");
-                              setState(() {});
-                            },
-                            child: Container(
-                              height: 50,
-                              width: double.infinity,
-                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                              decoration: const BoxDecoration(
-                                color: kPrimaryLightColor,
-                              ),
+                                if (token == "") {
+                                  Fluttertoast.showToast(
+                                      msg: "Token Can't Be Empty ",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.red,
+                                      textColor: Colors.white,
+                                      fontSize: 14.0);
+                                  return;
+                                }
+
+                                await addProgram(token);
+                                await getIdentifierAndTypes();
+
+                                Navigator.of(context)
+                                    .pushReplacementNamed("/identifiers");
+                                setState(() {});
+                              },
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
                                 // ignore: prefer_const_literals_to_create_immutables
                                 children: [
                                   const Text(
-                                    "Add Identifier",
+                                    "Add Program",
                                     style: TextStyle(
                                       fontSize: 16,
                                     ),
@@ -221,9 +205,9 @@ class _IdentifiersState extends State<Identifiers> {
                       ),
                     ),
                   ),
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom));
-            }
-        );
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom));
+            });
       });
     }
 
@@ -236,14 +220,12 @@ class _IdentifiersState extends State<Identifiers> {
         appBar: AppBar(
           toolbarHeight: size.height * 0.1,
           backgroundColor: kPrimary,
+          centerTitle: true,
           elevation: 10,
-          title: SizedBox(
-            width: size.width * 0.6,
-            child: const Text(
-              "IDENTIFIERS",
-              style: TextStyle(
-                fontSize: 16,
-              ),
+          title: const Text(
+            "IDENTIFIERS",
+            style: TextStyle(
+              fontSize: 20,
             ),
           ),
           actions: [
@@ -310,18 +292,19 @@ class _IdentifiersState extends State<Identifiers> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 height: size.height * 0.9,
                 child: ListView.builder(
                   itemCount: constantIdentifiers.length,
                   itemBuilder: (context, int index) {
-                      return Column(children: [
+                    return Column(
+                      children: [
                         IdentifierListTile(index),
                         const Divider(
                           thickness: 2,
                         ),
                       ],
-                      );
+                    );
                   },
                 ),
               ),
@@ -337,100 +320,62 @@ class _IdentifiersState extends State<Identifiers> {
                     top: Radius.circular(20),
                   ),
                 ),
-                isScrollControlled:true,
+                isScrollControlled: true,
                 clipBehavior: Clip.antiAliasWithSaveLayer,
-                builder: (builder){
+                builder: (builder) {
                   return Padding(
-                      child:  FractionallySizedBox(
+                      child: FractionallySizedBox(
                         //heightFactor: 0.8,
                         child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
-                                child:Row(
-                                  children:   [
+                                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                                child: Row(
+                                  children: [
                                     const Text(
-                                      "Add Identifier",
+                                      "Add Program",
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Spacer(),
+                                    const Spacer(),
                                     GestureDetector(
-                                      onTap: (){
+                                      onTap: () {
                                         Navigator.pop(context);
                                       },
-                                      child:const Icon(Icons.cancel_outlined,size: 25,),
-                                    )
-
-                                  ],
-                                ) ,
-                              ),
-                              const Divider(thickness: 2,),
-                              Container(
-                                alignment: Alignment.center,
-                                height: 50,
-                                width: double.infinity,
-                                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                child: DropdownButtonFormField2(
-                                  decoration: const InputDecoration(
-                                    isDense: true,
-                                    labelText: "Identifier Type",
-                                    border: OutlineInputBorder(
-                                    ),
-                                  ),
-                                  isExpanded: true,
-                                  icon: const Icon(
-                                    Icons.arrow_drop_down,
-                                  ),
-                                  iconOnClick: const Icon(
-                                    Icons.arrow_drop_up,
-                                  ),
-                                  iconSize: 30,
-                                  buttonHeight: 60,
-                                  //buttonPadding: const EdgeInsets.only(left: 20, right: 10),
-                                  dropdownDecoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  onChanged: (newValue) {
-                                    defaultValue = newValue;
-                                  },
-                                  items: constantIdentifierTypes.map((identifierType) {
-                                    return DropdownMenuItem(
-                                      child: Text(
-                                        identifierType["identifier_type"],
+                                      child: const Icon(
+                                        Icons.cancel_outlined,
+                                        size: 25,
                                       ),
-                                      value: identifierType["identifier_type"],
-                                    );
-                                  }).toList(),
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return 'Please select identifier.';
-                                    }
-                                  },
+                                    )
+                                  ],
                                 ),
                               ),
+                              const Divider(
+                                thickness: 2,
+                              ),
                               Container(
                                 alignment: Alignment.center,
                                 height: 50,
                                 width: double.infinity,
-                                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                margin:
+                                const EdgeInsets.fromLTRB(10, 10, 10, 10),
                                 child: TextField(
                                   onChanged: (value) {
                                     setState(() {
-                                      VALUE = _identifier.text;
+                                      VALUE = _token.text;
                                     });
                                   },
                                   style: const TextStyle(fontSize: 14),
-                                  controller: _identifier,
+                                  controller: _token,
                                   decoration: const InputDecoration(
                                     border: OutlineInputBorder(),
-                                    labelText: 'Identifier',
+                                    labelText: 'Enter Program Token',
                                     labelStyle: TextStyle(fontSize: 16),
                                     //border: InputBorder.none,
                                   ),
@@ -439,29 +384,21 @@ class _IdentifiersState extends State<Identifiers> {
                               Container(
                                 height: 50,
                                 width: double.infinity,
-                                margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                margin:
+                                const EdgeInsets.fromLTRB(10, 10, 10, 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(4),
                                   color: kPrimaryLightColor,
                                 ),
                                 child: FlatButton(
                                   onPressed: () async {
-                                    FocusManager.instance.primaryFocus?.unfocus();
-                                    String Identifier = VALUE;
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                    String token = VALUE;
 
-                                    if(defaultValue == null){
+                                    if (token == "") {
                                       Fluttertoast.showToast(
-                                          msg: "Select Identifier Type",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: Colors.red,
-                                          textColor: Colors.white,
-                                          fontSize: 14.0);
-                                      return;
-                                    }else if(Identifier == null || Identifier == ""){
-                                      Fluttertoast.showToast(
-                                          msg: "Identifier Can't Be Empty ",
+                                          msg: "Token Can't Be Empty ",
                                           toastLength: Toast.LENGTH_SHORT,
                                           gravity: ToastGravity.BOTTOM,
                                           timeInSecForIosWeb: 1,
@@ -470,17 +407,21 @@ class _IdentifiersState extends State<Identifiers> {
                                           fontSize: 14.0);
                                       return;
                                     }
-                                    String identifierType = defaultValue;
-                                    await addIdentifierToDB(Identifier, identifierType);
-                                    Navigator.of(context).pushReplacementNamed("/identifiers");
+
+                                    await addProgram(token);
+                                    await getIdentifierAndTypes();
+
+                                    Navigator.of(context)
+                                        .pushReplacementNamed("/identifiers");
                                     setState(() {});
                                   },
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                     // ignore: prefer_const_literals_to_create_immutables
                                     children: [
                                       const Text(
-                                        "Add Identifier",
+                                        "Add Program",
                                         style: TextStyle(
                                           fontSize: 16,
                                         ),
@@ -494,9 +435,9 @@ class _IdentifiersState extends State<Identifiers> {
                           ),
                         ),
                       ),
-                      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom));
-                }
-            );
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom));
+                });
           },
           icon: Icon(
             Icons.add,
@@ -565,132 +506,181 @@ class _IdentifiersState extends State<Identifiers> {
   }
 }
 
-class CustomDropDown extends StatefulWidget {
-  var identifier;
 
-  CustomDropDown(this.identifier, {Key? key}) : super(key: key);
+// INITIAL SHOWMODALBOTTOMSHEET
+/*
+showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            isScrollControlled: true,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            builder: (builder) {
+              return Padding(
+                  child: FractionallySizedBox(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  "Add Identifier",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Spacer(),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Icon(
+                                    Icons.cancel_outlined,
+                                    size: 25,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          const Divider(
+                            thickness: 2,
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            height: 50,
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: DropdownButtonFormField2(
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                labelText: "Identifier Type",
+                                border: OutlineInputBorder(),
+                              ),
+                              isExpanded: true,
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                              ),
+                              iconOnClick: const Icon(
+                                Icons.arrow_drop_up,
+                              ),
+                              iconSize: 30,
+                              buttonHeight: 60,
+                              //buttonPadding: const EdgeInsets.only(left: 20, right: 10),
+                              dropdownDecoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              onChanged: (newValue) {
+                                defaultValue = newValue;
+                              },
+                              items:
+                                  constantIdentifierTypes.map((identifierType) {
+                                return DropdownMenuItem(
+                                  child: Text(
+                                    identifierType["identifier_type"],
+                                  ),
+                                  value: identifierType["identifier_type"],
+                                );
+                              }).toList(),
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Please select identifier.';
+                                }
+                              },
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            height: 50,
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            child: TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  VALUE = _identifier.text;
+                                });
+                              },
+                              style: const TextStyle(fontSize: 14),
+                              controller: _identifier,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Identifier',
+                                labelStyle: TextStyle(fontSize: 16),
+                                //border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              String Identifier = VALUE;
 
-  @override
-  State<CustomDropDown> createState() => _CustomDropDownState();
-}
-
-class _CustomDropDownState extends State<CustomDropDown> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                height: MediaQuery.of(context).size.height * 0.06,
-                width: MediaQuery.of(context).size.width * 0.35,
-
-                //margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: DropdownButtonFormField2(
-                  value: defaultValue,
-                  decoration: InputDecoration(
-                    //Add isDense true and zero Padding.
-                    //Add Horizontal padding using buttonPadding and Vertical padding by increasing buttonHeight instead of add Padding here so that The whole TextField Button become clickable, and also the dropdown menu open under The whole TextField Button.
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                              if (defaultValue == null) {
+                                Fluttertoast.showToast(
+                                    msg: "Select Identifier Type",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.red,
+                                    textColor: Colors.white,
+                                    fontSize: 14.0);
+                                return;
+                              } else if (Identifier == null ||
+                                  Identifier == "") {
+                                Fluttertoast.showToast(
+                                    msg: "Identifier Can't Be Empty ",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.red,
+                                    textColor: Colors.white,
+                                    fontSize: 14.0);
+                                return;
+                              }
+                              String identifierType = defaultValue;
+                              await addIdentifierToDB(
+                                  Identifier, identifierType);
+                              Navigator.of(context)
+                                  .pushReplacementNamed("/identifiers");
+                              setState(() {});
+                            },
+                            child: Container(
+                              height: 50,
+                              width: double.infinity,
+                              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              decoration: const BoxDecoration(
+                                color: kPrimaryLightColor,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                // ignore: prefer_const_literals_to_create_immutables
+                                children: [
+                                  const Text(
+                                    "Add Identifier",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          //CustomDropDown(VALUE),
+                        ],
+                      ),
                     ),
-                    //Add more decoration as you want here
-                    //Add label If you want but add hint outside the decoration to be aligned in the button perfectly.
                   ),
-                  isExpanded: true,
-                  hint: const Text(
-                    'Select Identifier Type',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: Colors.black45,
-                  ),
-                  iconOnClick: const Icon(
-                    Icons.arrow_drop_up,
-                    color: Colors.black45,
-                  ),
-                  iconSize: 30,
-                  buttonHeight: 60,
-                  buttonPadding: const EdgeInsets.only(left: 20, right: 10),
-                  dropdownDecoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  onChanged: (newValue) {
-                    defaultValue = newValue;
-                  },
-                  items: constantIdentifierTypes.map((identifierType) {
-                    return DropdownMenuItem(
-                      child: Text(
-                        identifierType["identifier_type"],
-                        //style: const TextStyle(fontSize: 16),
-                      ),
-                      value: identifierType["identifier_type"],
-                    );
-                  }).toList(),
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select identifier.';
-                    }
-                  },
-                ),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () async {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  String Identifier = widget.identifier;
-                  String identifierType = defaultValue;
-                  await addIdentifierToDB(Identifier, identifierType);
-                  Navigator.of(context).pushReplacementNamed("/identifiers");
-                  setState(() {});
-                },
-                child: Container(
-                  height: MediaQuery.of(context).size.height * 0.06,
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.blue,
-                          Colors.lightBlueAccent,
-                        ]),
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    // ignore: prefer_const_literals_to_create_immutables
-                    children: [
-                      const Text(
-                        "Add Identifier",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Container(
-                          //padding: const EdgeInsets.all(8.0),
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle, color: Colors.white),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.lightBlueAccent,
-                          ))
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom));
+            });
+      });
+*/

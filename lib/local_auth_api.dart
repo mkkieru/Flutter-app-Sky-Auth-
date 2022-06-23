@@ -7,7 +7,7 @@ class LocalAuthApi {
   static Future<bool> hasBiometrics() async {
     try {
       return await _auth.canCheckBiometrics;
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }
@@ -28,7 +28,7 @@ class LocalAuthApi {
           ),
           localizedReason: 'Scan face or fingerprint to Authenticate',
         );
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }

@@ -8,8 +8,6 @@ import 'package:sky_auth/views/identifier/identifier.dart';
 import 'package:sky_auth/views/login/login.dart';
 import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:sky_auth/views/startup/welcome_screen.dart';
-
-import 'components/homePageStatusCodesList.dart';
 import 'views/signup/signup.dart';
 
 void main() {
@@ -28,8 +26,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
-
     precacheImage(const AssetImage("assets/images/add.png"), context);
     precacheImage(const AssetImage("assets/images/bottom1.png"), context);
     precacheImage(const AssetImage("assets/images/bottom2.png"), context);
@@ -42,7 +38,8 @@ class MyApp extends StatelessWidget {
     precacheImage(const AssetImage("assets/images/top1.png"), context);
     precacheImage(const AssetImage("assets/images/top2.png"), context);
     precacheImage(const AssetImage("assets/images/user.png"), context);
-    precacheImage(const AssetImage("assets/images/SkyWorldLogo.png"), context);
+    precacheImage(
+        const AssetImage("assets/images/Sky-World-Logo-no-bg.png"), context);
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
@@ -50,7 +47,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: kPrimary,
         fontFamily: 'Roboto',
-        //brightness: Brightness.dark,
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
@@ -63,8 +59,8 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         '/login': (context) => const LoaderOverlay(child: Login()),
-        '/signup': (context) =>const LoaderOverlay(child: Signup()),
-        '/homePage': (context) =>const LoaderOverlay(child: HomePage()),
+        '/signup': (context) => const LoaderOverlay(child: Signup()),
+        '/homePage': (context) => const LoaderOverlay(child: HomePage()),
         '/identifiers': (context) => const LoaderOverlay(child: Identifiers()),
       },
     );
