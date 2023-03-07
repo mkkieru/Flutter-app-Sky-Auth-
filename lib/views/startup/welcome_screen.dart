@@ -65,7 +65,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   borderRadius: BorderRadius.circular(4),
                   color: kPrimary,
                 ),
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () async {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
@@ -93,7 +93,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   borderRadius: BorderRadius.circular(4),
                   color: kPrimaryLightColor,
                 ),
-                child: FlatButton(
+                child: TextButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/signup');
                   },
@@ -147,8 +147,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  confirmAccessTokenIsValid(
-      var userId, var ip_addressLogin, var access_token) async {
+  confirmAccessTokenIsValid(var userId, var ip_addressLogin, var access_token) async {
     var body = {"user_id": userId, "ip_address": ip_addressLogin};
     var response = await http.post(
       Uri.parse("http://$ipAddress:8081/sky-auth/users/checkAccessToken"),

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 //const ipAddress = "192.168.100.100";
 //const ipAddress = "172.20.106.107";
-//const ipAddress = "10.0.2.2";
-const ipAddress = "85.159.214.103";
+// const ipAddress = "10.0.2.2";
+const ipAddress = "172.105.244.19";
 
 const kPrimary = Color.fromARGB(255,21,57,128);
 const kPrimaryLightColor = Color.fromARGB(255,0,167,225);

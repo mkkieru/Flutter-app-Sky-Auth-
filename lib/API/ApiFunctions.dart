@@ -19,7 +19,7 @@ activateCodes() async {
 
     var response = await http.post(
       Uri.parse(
-          "http://$ipAddress:8081/sky-auth/status/activate"),
+          "http://$ipAddress:8081/sky-auth/auth_details/activate"),
       body: jsonEncode(body),
       headers: {"access_token": ACCESSTOKEN},
     );
@@ -28,7 +28,7 @@ activateCodes() async {
       return;
     }
     Fluttertoast.showToast(
-        msg: "Invalid token",
+        msg: "Invalid token ",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
@@ -45,7 +45,7 @@ deactivateCodes() async {
 
   var response = await http.post(
     Uri.parse(
-        "http://$ipAddress:8081/sky-auth/status/deactivate"),
+        "http://$ipAddress:8081/sky-auth/auth_details/deactivate"),
     body: jsonEncode(body),
     headers: {"access_token": ACCESSTOKEN},
   );
@@ -54,7 +54,7 @@ deactivateCodes() async {
     return;
   }
   Fluttertoast.showToast(
-      msg: "Invalid token",
+      msg: "Invalid token ",
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
@@ -92,7 +92,7 @@ addProgram(var token) async {
         fontSize: 14.0);
   }else if(response.statusCode == 400){
     Fluttertoast.showToast(
-        msg: "Invalid Token Provided",
+        msg: "Invalid Token ",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
@@ -137,7 +137,7 @@ confirmIdentifier(identifier, identifierType, text) async {
       return;
     }
     Fluttertoast.showToast(
-        msg: "Invalid token",
+        msg: "Invalid token ",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,

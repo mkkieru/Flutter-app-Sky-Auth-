@@ -679,7 +679,7 @@ class _StatusCodeWidgetState extends State<StatusCodeWidget> {
       for (int i = 0; i < programs.length; i++) {
         if (programs[i]["program_id"] == qrData["program_id"]) {
           if (programs[i]["program_name"] == widget.programName &&
-              qrData["identifier"] == individualIdentifier) {
+              qrData["identifier"] == widget.identifier) {
             qrData.remove("auth_code");
 
             var response = await http.post(

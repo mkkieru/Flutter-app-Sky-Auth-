@@ -160,7 +160,7 @@ class _IdentifiersState extends State<Identifiers>  with WidgetsBindingObserver 
                               borderRadius: BorderRadius.circular(4),
                               color: kPrimaryLightColor,
                             ),
-                            child: FlatButton(
+                            child: TextButton(
                               onPressed: () async {
                                 FocusManager.instance.primaryFocus
                                     ?.unfocus();
@@ -246,7 +246,7 @@ class _IdentifiersState extends State<Identifiers>  with WidgetsBindingObserver 
                               content: const Text(
                                   "Are you sure you want to logout?"),
                               actions: <Widget>[
-                                FlatButton(
+                                TextButton(
                                   child: const Text(
                                     "No",
                                     //style: TextStyle(color: Colors.black),
@@ -255,7 +255,7 @@ class _IdentifiersState extends State<Identifiers>  with WidgetsBindingObserver 
                                     Navigator.of(context).pop();
                                   },
                                 ),
-                                FlatButton(
+                                TextButton(
                                   child: const Text(
                                     "Yes",
                                     style: TextStyle(color: Colors.red),
@@ -390,7 +390,7 @@ class _IdentifiersState extends State<Identifiers>  with WidgetsBindingObserver 
                                   borderRadius: BorderRadius.circular(4),
                                   color: kPrimaryLightColor,
                                 ),
-                                child: FlatButton(
+                                child: TextButton(
                                   onPressed: () async {
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus();
